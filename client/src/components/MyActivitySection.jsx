@@ -1,5 +1,5 @@
 import MyEventsSection from "./MyEventsSection";
-import { registrationStatusLabel, registrationStatusPillClass } from "../utils";
+import { registrationStatusClass, registrationStatusLabel } from "../utils";
 
 const tabClass = (active) =>
   `rounded-2xl px-4 py-2 text-sm font-semibold transition ${
@@ -48,7 +48,7 @@ function AttendingCard({ item, onOpen }) {
         )}
       </div>
       <span
-        className={`shrink-0 px-3 py-1 text-xs font-bold ${registrationStatusPillClass(item.registration_status)}`}
+        className={`shrink-0 px-3 py-1 text-xs font-bold ${registrationStatusClass(item.registration_status)}`}
       >
         {registrationStatusLabel(item.registration_status)}
       </span>

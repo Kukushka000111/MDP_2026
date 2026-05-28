@@ -10,7 +10,7 @@ import {
   isEventOrganizer,
   organizerEventsLabel,
   platformTenureLabel,
-  registrationStatusPillClass,
+  registrationStatusClass,
   registrationStatusLabel,
   spotsBadgeText
 } from "../utils";
@@ -331,7 +331,7 @@ export default function EventDetailSection({
               <div className="surface-muted px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Ваша заявка</p>
                 <span
-                  className={`mt-1 inline-block px-3 py-1 text-xs font-bold ${registrationStatusPillClass(status)}`}
+                  className={`mt-1 inline-block px-3 py-1 text-xs font-bold ${registrationStatusClass(status)}`}
                 >
                   {registrationStatusLabel(status)}
                 </span>

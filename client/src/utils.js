@@ -16,32 +16,6 @@ export function moderationStatusLabel(status) {
   return MODERATION_LABELS[status] || status;
 }
 
-export function moderationStatusClass(status) {
-  switch (status) {
-    case "APPROVED":
-      return "rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300";
-    case "NEEDS_EDIT":
-      return "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300";
-    case "REJECTED":
-      return "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300";
-    default:
-      return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
-  }
-}
-
-export function moderationBannerClass(status) {
-  switch (status) {
-    case "APPROVED":
-      return "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200";
-    case "NEEDS_EDIT":
-      return "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200";
-    case "REJECTED":
-      return "border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-200";
-    default:
-      return "border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200";
-  }
-}
-
 export function toDatetimeLocalValue(isoString) {
   if (!isoString) return "";
   const date = new Date(isoString);
@@ -100,10 +74,6 @@ export function registrationStatusClass(status) {
     default:
       return "rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300";
   }
-}
-
-export function registrationStatusPillClass(status) {
-  return registrationStatusClass(status);
 }
 
 export function moderationBadgePastel(status) {

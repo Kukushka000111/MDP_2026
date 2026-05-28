@@ -1,7 +1,5 @@
 import { THEME_KEY } from "./constants";
 
-export const THEMES = ["light", "dark"];
-
 export function normalizeTheme(value) {
   return value === "dark" ? "dark" : "light";
 }

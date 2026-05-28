@@ -36,15 +36,3 @@ export const PAGE_TITLES = {
   favorites: "Избранное",
   "create-event": "Создать мероприятие"
 };
-
-export const EMPTY_REGISTER_FORM = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  login: "",
-  password: "",
-  passwordConfirm: "",
-  acceptRules: false,
-  ageStatus: "",
-  gender: ""
-};
