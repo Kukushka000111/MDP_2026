@@ -42,7 +42,7 @@ export default function FavoritesSection({
           ))}
         </div>
       ) : (
-        <p className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+        <p className="empty-state">
           Избранное пусто. Нажмите ★ на карточке в ленте.
         </p>
       )}

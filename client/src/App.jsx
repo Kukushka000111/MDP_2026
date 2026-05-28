@@ -8,6 +8,7 @@ import {
   createEvent,
   deleteEvent,
   getAdminStats,
+  getEventReports,
   getEventDetails,
   getEvents,
   getMe,
@@ -28,6 +29,7 @@ import {
   removeEventParticipant,
   reviewEventRegistration,
   updateEvent,
+  updateMyTheme,
   upsertReview
 } from "./api";
 import AppFooter from "./components/AppFooter";
@@ -46,6 +48,7 @@ import UserProfileView from "./components/UserProfileView";
 import RegisterPage from "./components/RegisterPage";
 import Toast from "./Toast";
 import { FAVORITES_KEY, PAGE_SIZE, PAGE_TITLES, PAGES, TOKEN_KEY } from "./constants";
+import { applyTheme, getStoredTheme, normalizeTheme } from "./theme";
 import {
   EMPTY_EVENT_FORM,
   readImageFileAsDataUrl,
@@ -115,6 +118,8 @@ export default function App() {
   const [moderationComments, setModerationComments] = useState({});
   const [debouncedQ, setDebouncedQ] = useState("");
   const [queue, setQueue] = useState([]);
+  const [eventReports, setEventReports] = useState([]);
+  const [theme, setTheme] = useState(getStoredTheme);
   const [activeEventId, setActiveEventId] = useState("");
   const [reviewsByEvent, setReviewsByEvent] = useState({});
   const [reviewForm, setReviewForm] = useState({ rating: 5, body: "" });
@@ -158,6 +163,28 @@ export default function App() {
     applyRoute({ page: nextPage, eventId: "", userId: "" });
     if (window.location.hash.replace(/^#/, "") !== nextPage) {
       window.location.hash = nextPage;
+    }
+  }
+
+  const syncThemeFromProfile = useCallback((profile) => {
+    if (!profile?.theme) return;
+    const next = normalizeTheme(profile.theme);
+    applyTheme(next);
+    setTheme(next);
+  }, []);
+
+  async function handleThemeChange(nextTheme) {
+    const normalized = normalizeTheme(nextTheme);
+    applyTheme(normalized);
+    setTheme(normalized);
+
+    if (!token) return;
+
+    try {
+      const updated = await updateMyTheme(token, normalized);
+      setMyProfile(updated);
+    } catch (error) {
+      showToast(error.message, "error");
     }
   }
 
@@ -303,6 +330,7 @@ export default function App() {
       localStorage.setItem(TOKEN_KEY, token);
       const me = await getMe(token);
       setUser(me.user);
+      syncThemeFromProfile(me.user);
       for (const eventId of favorites) {
         await addServerFavorite(token, eventId);
       }
@@ -313,22 +341,25 @@ export default function App() {
         getMyAttendingEvents(token)
       ]);
       setMyProfile(profile);
+      syncThemeFromProfile(profile);
       setMyEvents(created);
       setMyAttending(attending);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, syncThemeFromProfile]);
 
   useEffect(() => {
     (async () => {
       if (!token || user?.role !== "ADMIN") return;
       try {
-        const [queueItems, stats] = await Promise.all([
+        const [queueItems, stats, reports] = await Promise.all([
           getModerationQueue(token, moderationFilter),
-          getAdminStats(token)
+          getAdminStats(token),
+          getEventReports(token)
         ]);
         setQueue(queueItems);
         setAdminStats(stats);
+        setEventReports(reports);
       } catch (error) {
         showToast(error.message, "error");
       }
@@ -511,6 +542,7 @@ export default function App() {
     localStorage.setItem(TOKEN_KEY, result.token);
     const profile = await getMyProfile(result.token);
     setMyProfile(profile);
+    syncThemeFromProfile(profile);
     const [created, attending] = await Promise.all([
       getMyCreatedEvents(result.token),
       getMyAttendingEvents(result.token)
@@ -708,8 +740,14 @@ export default function App() {
 
   async function submitReport(reason) {
     if (!token || !reportModal.eventId) return;
-    await reportEvent(token, reportModal.eventId, reason);
-    showToast("Жалоба отправлена модераторам", "success");
+    try {
+      await reportEvent(token, reportModal.eventId, reason);
+      showToast("Жалоба отправлена. Админ увидит её в разделе «Модерация».", "success");
+      setReportModal({ open: false, eventId: "", title: "" });
+    } catch (error) {
+      showToast(error.message, "error");
+      throw error;
+    }
   }
 
   function resetFilters() {
@@ -723,7 +761,11 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div
+      className={`flex flex-col bg-slate-100 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100 ${
+        page === PAGES.FEED ? "h-screen overflow-hidden" : "min-h-screen"
+      }`}
+    >
       <Toast toasts={toasts} />
       <AttendApplyModal
         open={attendModal.open}
@@ -749,21 +791,29 @@ export default function App() {
         }
         onNavigate={navigate}
         showToast={showToast}
+        theme={theme}
+        onThemeChange={handleThemeChange}
       />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">
+      <main
+        className={`mx-auto flex w-full flex-1 flex-col ${
+          page === PAGES.FEED
+            ? "min-h-0 max-w-none px-0 py-0"
+            : "max-w-7xl px-4 py-6"
+        }`}
+      >
         {(apiOffline || metaError) && (
-          <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-200">
             Сервер API недоступен. Запустите бэкенд: <code className="rounded bg-amber-100 px-1">npm run dev:server</code>
           </div>
         )}
         {page !== PAGES.FEED && (
-          <section className="mb-4 text-sm font-medium text-slate-500">
-            <button type="button" className="text-indigo-600 hover:underline" onClick={() => navigate(PAGES.FEED)}>
+          <section className="breadcrumb-muted mb-4">
+            <button type="button" className="text-indigo-600 hover:underline dark:text-indigo-400" onClick={() => navigate(PAGES.FEED)}>
               Главная
             </button>
             <span className="mx-2">/</span>
-            <span className="font-semibold text-slate-900">{PAGE_TITLES[page] || page}</span>
+            <span className="breadcrumb-current">{PAGE_TITLES[page] || page}</span>
           </section>
         )}
 
@@ -780,11 +830,13 @@ export default function App() {
             <UserProfileView
               profile={myProfile}
               isOwn
+              theme={theme}
+              onThemeChange={handleThemeChange}
               onEdit={() => navigate(PAGES.PROFILE_EDIT)}
               onLogout={logout}
             />
           ) : (
-            <p className="rounded-lg bg-white p-4 text-sm text-slate-500 shadow">Загрузка профиля…</p>
+            <p className="rounded-lg bg-white p-4 text-sm text-slate-500 shadow dark:bg-slate-900 dark:text-slate-400">Загрузка профиля…</p>
           )
         )}
 
@@ -802,6 +854,8 @@ export default function App() {
           <UserProfileView
             profile={viewedProfile}
             isOwn={viewedProfile?.id === user?.id}
+            theme={theme}
+            onThemeChange={viewedProfile?.id === user?.id ? handleThemeChange : undefined}
             onEdit={viewedProfile?.id === user?.id ? () => navigate(PAGES.PROFILE_EDIT) : undefined}
             onBack={() => navigate(PAGES.FEED)}
           />
@@ -871,11 +925,13 @@ export default function App() {
           <ModerationPanel
             stats={adminStats}
             queue={queue}
+            reports={eventReports}
             moderationFilter={moderationFilter}
             setModerationFilter={setModerationFilter}
             moderationComments={moderationComments}
             setModerationComments={setModerationComments}
             onApplyModeration={applyModeration}
+            onOpenEvent={openEventPage}
           />
         )}
 
@@ -934,7 +990,7 @@ export default function App() {
         )}
       </main>
 
-      <AppFooter token={token} onNavigate={navigate} />
+      <AppFooter compact={page === PAGES.FEED} />
     </div>
   );
 }

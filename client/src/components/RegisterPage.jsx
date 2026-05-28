@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { checkAuthAvailability, getCaptcha, register } from "../api";
 import { PAGES } from "../constants";
 import PasswordInput from "./PasswordInput";
+import PasswordStrengthHints from "./PasswordStrengthHints";
 import { fieldErrorClass } from "../utils";
 import { validateLogin, validateRegisterForm } from "../validation/userValidation";
 
@@ -10,7 +11,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function Field({ label, error, children }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-slate-700">{label}</label>
+      <label className="form-label mb-1 block">{label}</label>
       {children}
       {error && <p className="mt-1 text-xs text-rose-600">{error}</p>}
     </div>
@@ -124,7 +125,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
   return (
     <section className="card-surface mx-auto mb-6 max-w-xl p-8">
       <h2 className="section-heading mb-1 text-2xl">Регистрация</h2>
-      <p className="mb-4 text-sm text-slate-500">
+      <p className="mb-4 text-sm text-muted">
         После регистрации заполните контакты в профиле — они подставятся при создании мероприятий.
       </p>
 
@@ -201,9 +202,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
             onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
             autoComplete="new-password"
           />
-          <p className="mt-1 text-xs text-slate-400">
-            Минимум 8 символов: прописные, строчные, цифры и спецсимвол
-          </p>
+          <PasswordStrengthHints password={form.password} />
         </Field>
 
         <Field label="Подтверждение пароля *" error={errors.passwordConfirm}>
@@ -229,9 +228,9 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
         </Field>
 
         <div>
-          <span className="mb-2 block text-sm font-medium text-slate-700">Пол *</span>
+          <span className="form-label mb-2 block">Пол *</span>
           <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
               <input
                 type="radio"
                 name="gender"
@@ -241,7 +240,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
               />
               Мужской
             </label>
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
               <input
                 type="radio"
                 name="gender"
@@ -255,7 +254,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
           {errors.gender && <p className="mt-1 text-xs text-rose-600">{errors.gender}</p>}
         </div>
 
-        <label className="flex items-start gap-2 text-sm">
+        <label className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
           <input
             type="checkbox"
             checked={form.acceptRules}
@@ -267,14 +266,14 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
 
         <Field label="Проверка (капча) *" error={errors.captchaAnswer}>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium">{captcha.question || "..."}</span>
+            <span className="captcha-prompt">{captcha.question || "..."}</span>
             <input
               className={`input-field w-24 ${fieldErrorClass(Boolean(errors.captchaAnswer))}`}
               inputMode="numeric"
               value={form.captchaAnswer}
               onChange={(e) => setForm((p) => ({ ...p, captchaAnswer: e.target.value }))}
             />
-            <button type="button" className="text-xs text-blue-600 underline" onClick={loadCaptcha}>
+            <button type="button" className="text-xs font-medium text-indigo-600 underline dark:text-indigo-400" onClick={loadCaptcha}>
               Другой пример
             </button>
           </div>

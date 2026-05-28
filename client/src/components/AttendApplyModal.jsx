@@ -23,15 +23,15 @@ export default function AttendApplyModal({ open, eventTitle, onClose, onSubmit }
 
   return (
     <ModalOverlay open={open} onClose={onClose}>
-      <div className="mx-auto w-full max-w-md rounded-xl bg-white p-5 shadow-xl">
-        <h3 className="text-lg font-semibold">Заявка на участие</h3>
-        {eventTitle && <p className="mt-1 text-sm text-slate-600">{eventTitle}</p>}
-        <p className="mt-2 text-sm text-slate-500">
+      <div className="mx-auto w-full max-w-md rounded-xl bg-white p-5 shadow-xl dark:bg-slate-900 dark:shadow-slate-950/50">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Заявка на участие</h3>
+        {eventTitle && <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{eventTitle}</p>}
+        <p className="mt-2 text-sm text-muted">
           Организатор рассмотрит заявку. Можно коротко написать, почему хотите прийти.
         </p>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <textarea
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="input-field text-sm"
             rows={4}
             maxLength={500}
             placeholder="Сообщение организатору (необязательно)"

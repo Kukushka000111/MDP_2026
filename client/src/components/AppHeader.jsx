@@ -1,5 +1,7 @@
 import { PAGES } from "../constants";
 import NotificationBell from "./NotificationBell";
+import SiteLogo from "./SiteLogo";
+import ThemeToggle from "./ThemeToggle";
 
 function IconHeart({ className, filled }) {
   return (
@@ -40,10 +42,10 @@ function NavTextLink({ active, children, onClick, className = "" }) {
     <button
       type="button"
       onClick={onClick}
-      className={`font-medium transition-colors ${
+      className={`text-sm font-medium transition-colors sm:text-base ${
         active
-          ? "text-indigo-600"
-          : "text-slate-600 hover:text-indigo-600"
+          ? "text-indigo-600 dark:text-indigo-400"
+          : "text-slate-600 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
       } ${className}`}
     >
       {children}
@@ -58,7 +60,7 @@ function IconNavButton({ active, label, onClick, children, hoverClass = "hover:t
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${
+      className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors sm:h-9 sm:w-9 ${
         active ? "bg-indigo-50 text-indigo-600" : `text-slate-500 ${hoverClass}`
       }`}
     >
@@ -74,52 +76,80 @@ export default function AppHeader({
   profileAvatarUrl,
   profileInitial,
   onNavigate,
-  showToast
+  showToast,
+  theme,
+  onThemeChange
 }) {
   const avatarLetter = (profileInitial || "?").trim().charAt(0).toUpperCase() || "?";
 
   return (
-    <header className="relative z-[1000] border-b border-slate-100 bg-white px-6 py-3">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-        <button type="button" className="shrink-0 text-left" onClick={() => onNavigate(PAGES.FEED)}>
-          <h1 className="text-lg font-bold text-slate-900 sm:text-xl">Культурный Навигатор</h1>
-          <p className="text-xs font-medium text-slate-500 sm:text-sm">События рядом с вами</p>
+    <header className="relative z-[1000] shrink-0 border-b border-slate-100 bg-white px-3 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:px-6 sm:py-4 lg:px-8 lg:py-5">
+      <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2 sm:gap-6">
+        <button
+          type="button"
+          className="flex min-w-0 shrink items-center gap-2 text-left sm:gap-4"
+          onClick={() => onNavigate(PAGES.FEED)}
+        >
+          <span className="sm:hidden">
+            <SiteLogo size={40} />
+          </span>
+          <span className="hidden sm:inline">
+            <SiteLogo size={56} />
+          </span>
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-xl lg:text-2xl">
+              <span className="sm:hidden">Навигатор</span>
+              <span className="hidden sm:inline">Культурный Навигатор</span>
+            </h1>
+            <p className="mt-0.5 hidden text-sm font-medium text-slate-500 dark:text-slate-400 sm:block sm:text-base">
+              События рядом с вами · Кострома
+            </p>
+          </div>
         </button>
 
         {!token ? (
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <ThemeToggle theme={theme} onChange={onThemeChange} />
             <button
               type="button"
-              className="font-medium text-slate-600 transition-colors hover:text-indigo-600"
+              className="text-sm font-medium text-slate-600 transition-colors hover:text-indigo-600 sm:text-base"
               onClick={() => onNavigate(PAGES.LOGIN)}
             >
               Вход
             </button>
             <button
               type="button"
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-indigo-700 hover:shadow-md"
+              className="rounded-xl bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white transition-all hover:bg-indigo-700 sm:px-4 sm:py-2"
               onClick={() => onNavigate(PAGES.REGISTER)}
             >
               Регистрация
             </button>
           </div>
         ) : (
-          <nav className="flex flex-wrap items-center justify-end gap-4 sm:gap-6">
-            <NavTextLink active={page === PAGES.FEED} onClick={() => onNavigate(PAGES.FEED)}>
+          <nav className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-4 lg:gap-7">
+            <ThemeToggle theme={theme} onChange={onThemeChange} />
+            <NavTextLink
+              active={page === PAGES.FEED}
+              onClick={() => onNavigate(PAGES.FEED)}
+              className="hidden sm:inline-flex"
+            >
               Лента
             </NavTextLink>
 
             <button
               type="button"
               onClick={() => onNavigate(PAGES.CREATE_EVENT)}
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-indigo-700 hover:shadow-md"
+              aria-label="Создать мероприятие"
+              className="rounded-xl bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white transition-all hover:bg-indigo-700 sm:px-4 sm:py-2"
             >
-              + Создать
+              <span className="sm:hidden">+</span>
+              <span className="hidden sm:inline">+ Создать</span>
             </button>
 
             <NavTextLink
               active={page === PAGES.MY_EVENTS || page === PAGES.ATTENDING}
               onClick={() => onNavigate(PAGES.ATTENDING)}
+              className="hidden min-[420px]:inline-flex"
             >
               Моё
             </NavTextLink>
@@ -150,7 +180,7 @@ export default function AppHeader({
               onClick={() => onNavigate(PAGES.PROFILE)}
               aria-label="Профиль"
               title="Профиль"
-              className={`flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border font-bold text-sm transition-colors ${
+              className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border font-bold text-sm transition-colors sm:h-9 sm:w-9 ${
                 page === PAGES.PROFILE || page === PAGES.PROFILE_EDIT
                   ? "border-indigo-300 bg-indigo-100 text-indigo-700 ring-2 ring-indigo-200"
                   : "border-indigo-100 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"

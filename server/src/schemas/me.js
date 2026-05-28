@@ -45,6 +45,15 @@ const updateProfileSchema = z
     if (lastErr) ctx.addIssue({ code: z.ZodIssueCode.custom, message: lastErr, path: ["body", "lastName"] });
   });
 
+const updateThemeSchema = z.object({
+  body: z.object({
+    theme: z.enum(["light", "dark"])
+  }),
+  query: z.object({}).optional(),
+  params: z.object({}).optional()
+});
+
 module.exports = {
-  updateProfileSchema
+  updateProfileSchema,
+  updateThemeSchema
 };

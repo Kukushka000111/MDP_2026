@@ -64,6 +64,15 @@ export async function getAdminStats(token) {
   return response.json();
 }
 
+export async function getEventReports(token) {
+  const response = await fetch(`${API_BASE}/admin/reports`, {
+    headers: authHeaders(token)
+  });
+  if (!response.ok) throw new Error(await parseApiError(response, "Не удалось загрузить жалобы"));
+  const data = await response.json();
+  return data.items || [];
+}
+
 export async function getEventDetails(eventId, token = "") {
   const response = await fetch(`${API_BASE}/events/${eventId}`, {
     headers: authHeaders(token)
@@ -369,6 +378,20 @@ export async function updateMyProfile(token, payload) {
     body: JSON.stringify(payload)
   });
   if (!response.ok) throw new Error(await parseApiError(response, "Не удалось сохранить профиль"));
+  const data = await response.json();
+  return data.item;
+}
+
+export async function updateMyTheme(token, theme) {
+  const response = await fetch(`${API_BASE}/me/theme`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(token)
+    },
+    body: JSON.stringify({ theme })
+  });
+  if (!response.ok) throw new Error(await parseApiError(response, "Не удалось сохранить тему"));
   const data = await response.json();
   return data.item;
 }

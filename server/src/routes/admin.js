@@ -23,7 +23,8 @@ router.get("/stats", async (req, res, next) => {
             (SELECT COUNT(*)::int FROM events) AS events_count,
             (SELECT COUNT(*)::int FROM event_registrations) AS registrations_count,
             (SELECT COUNT(*)::int FROM reviews) AS reviews_count,
-            (SELECT COUNT(*)::int FROM favorites) AS favorites_count`
+            (SELECT COUNT(*)::int FROM favorites) AS favorites_count,
+            (SELECT COUNT(*)::int FROM event_reports) AS reports_count`
       )
     ]);
 
@@ -70,6 +71,32 @@ router.get("/events/moderation-queue", validate(listModerationQueueSchema), asyn
        WHERE ${whereSql}
        ORDER BY e.created_at ASC`,
       values
+    );
+
+    return res.json({ items: result.rows });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get("/reports", async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+          r.id,
+          r.reason,
+          r.created_at,
+          e.id AS event_id,
+          e.title AS event_title,
+          u.id AS reporter_id,
+          u.display_name AS reporter_name,
+          u.login AS reporter_login,
+          u.email AS reporter_email
+       FROM event_reports r
+       JOIN events e ON e.id = r.event_id
+       JOIN users u ON u.id = r.user_id
+       ORDER BY r.created_at DESC
+       LIMIT 200`
     );
 
     return res.json({ items: result.rows });

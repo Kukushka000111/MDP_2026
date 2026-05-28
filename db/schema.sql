@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS users (
   is_adult BOOLEAN NOT NULL DEFAULT FALSE,
   rules_accepted BOOLEAN NOT NULL DEFAULT FALSE,
   role user_role NOT NULL DEFAULT 'USER',
+  theme TEXT NOT NULL DEFAULT 'light',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -95,7 +96,8 @@ ALTER TABLE users
   ADD COLUMN IF NOT EXISTS bio TEXT,
   ADD COLUMN IF NOT EXISTS gender user_gender,
   ADD COLUMN IF NOT EXISTS is_adult BOOLEAN DEFAULT FALSE,
-  ADD COLUMN IF NOT EXISTS rules_accepted BOOLEAN DEFAULT FALSE;
+  ADD COLUMN IF NOT EXISTS rules_accepted BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS theme TEXT NOT NULL DEFAULT 'light';
 
 UPDATE users
 SET login = COALESCE(login, split_part(email, '@', 1) || '_' || substr(id::text, 1, 4))

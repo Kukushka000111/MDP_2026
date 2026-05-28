@@ -6,7 +6,7 @@ import { fieldErrorClass } from "../utils";
 function FormField({ label, error, children, className = "" }) {
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
-      {label && <label className="text-sm font-medium text-slate-700">{label}</label>}
+      {label && <label className="form-label">{label}</label>}
       {children}
       {error && <span className="text-xs text-rose-600">{error}</span>}
     </div>
@@ -37,7 +37,7 @@ export default function EventFormSection({
 
   return (
     <section className="card-surface mx-auto max-w-6xl p-6 sm:p-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-700">
         <div className="min-w-0">
           {onBack && (
             <button type="button" className="btn-ghost mb-2" onClick={onBack}>
@@ -47,7 +47,7 @@ export default function EventFormSection({
           <h2 className="section-heading text-2xl">
             {editingEventId ? "Редактировать мероприятие" : "Создать мероприятие"}
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted">
             После отправки мероприятие попадёт на модерацию и появится в ленте после одобрения.
           </p>
         </div>
@@ -151,11 +151,11 @@ export default function EventFormSection({
             <p className="text-xs text-slate-400">Формат: город, улица, дом</p>
           </FormField>
 
-          <fieldset className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <legend className="px-1 text-sm font-medium text-slate-800">
+          <fieldset className="surface-muted p-4">
+            <legend className="form-legend">
               Вы хотите сделать свой адрес публичным?
             </legend>
-            <div className="mt-2 space-y-2 text-sm">
+            <div className="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-300">
               <label className="flex cursor-pointer gap-2">
                 <input
                   type="radio"

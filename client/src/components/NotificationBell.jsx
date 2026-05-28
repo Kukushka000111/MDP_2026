@@ -51,7 +51,7 @@ export default function NotificationBell({ token, showToast }) {
     <div className="relative" ref={panelRef}>
       <button
         type="button"
-        className="relative flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-50 hover:text-indigo-600"
+        className="relative flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-50 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
         onClick={() => setOpen((prev) => !prev)}
         aria-label="Уведомления"
         title="Уведомления"
@@ -77,33 +77,35 @@ export default function NotificationBell({ token, showToast }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-[1100] mt-2 w-80 max-w-[90vw] rounded-2xl border border-slate-100 bg-white shadow-xl">
-          <div className="flex items-center justify-between border-b px-3 py-2">
-            <p className="text-sm font-semibold text-slate-800">Уведомления</p>
+        <div className="absolute right-0 z-[1100] mt-2 w-80 max-w-[90vw] rounded-2xl border border-slate-100 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/50">
+          <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-700">
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Уведомления</p>
             {unreadCount > 0 && (
-              <button type="button" className="text-xs text-blue-600" onClick={handleMarkAll}>
+              <button type="button" className="text-xs text-indigo-600 dark:text-indigo-400" onClick={handleMarkAll}>
                 Прочитать все
               </button>
             )}
           </div>
           <ul className="max-h-80 overflow-y-auto">
             {items.length === 0 && (
-              <li className="px-3 py-4 text-center text-sm text-slate-500">Пока нет уведомлений</li>
+              <li className="px-3 py-4 text-center text-sm text-muted">Пока нет уведомлений</li>
             )}
             {items.map((item) => (
               <li
                 key={item.id}
-                className={`border-b px-3 py-2 text-sm ${item.read_at ? "bg-white" : "bg-blue-50"}`}
+                className={`border-b border-slate-100 px-3 py-2 text-sm dark:border-slate-800 ${
+                  item.read_at ? "bg-white dark:bg-slate-900" : "bg-blue-50 dark:bg-indigo-950/50"
+                }`}
               >
-                <p className="font-medium text-slate-800">{item.title}</p>
-                <p className="text-xs text-slate-600">{item.body}</p>
+                <p className="font-medium text-slate-800 dark:text-slate-100">{item.title}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">{item.body}</p>
                 <p className="mt-1 text-[10px] text-slate-400">
                   {new Date(item.created_at).toLocaleString("ru-RU")}
                 </p>
                 {!item.read_at && (
                   <button
                     type="button"
-                    className="mt-1 text-xs text-blue-600"
+                    className="mt-1 text-xs text-indigo-600 dark:text-indigo-400"
                     onClick={() => handleRead(item.id)}
                   >
                     Отметить прочитанным

@@ -46,7 +46,7 @@ export default function LoginPage({ onSuccess, onNavigate, showToast }) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Логин</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Логин</label>
           <input
             className={inputCls("login")}
             value={form.login}
@@ -55,7 +55,7 @@ export default function LoginPage({ onSuccess, onNavigate, showToast }) {
           {errors.login && <p className="mt-1 text-xs text-rose-600">{errors.login}</p>}
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Пароль</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Пароль</label>
           <PasswordInput
             className="text-slate-900"
             hasError={Boolean(errors.password)}
@@ -74,7 +74,7 @@ export default function LoginPage({ onSuccess, onNavigate, showToast }) {
         </button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-slate-600">
+      <p className="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
         Нет аккаунта?{" "}
         <button type="button" className="font-semibold text-indigo-600 underline hover:text-indigo-700" onClick={() => onNavigate(PAGES.REGISTER)}>
           Регистрация

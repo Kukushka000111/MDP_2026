@@ -2,7 +2,7 @@ const express = require("express");
 const pool = require("../db/pool");
 const { requireAuth } = require("../middleware/auth");
 const validate = require("../middleware/validate");
-const { updateProfileSchema } = require("../schemas/me");
+const { updateProfileSchema, updateThemeSchema } = require("../schemas/me");
 const HttpError = require("../utils/http-error");
 
 const router = express.Router();
@@ -10,7 +10,7 @@ const router = express.Router();
 router.use(requireAuth);
 
 const profileFields = `id, email, login, first_name, last_name, display_name,
-  phone, avatar_url, vk_url, telegram, bio, gender, is_adult, role, created_at`;
+  phone, avatar_url, vk_url, telegram, bio, gender, is_adult, role, theme, created_at`;
 
 router.get("/profile", async (req, res, next) => {
   try {
@@ -53,6 +53,28 @@ router.patch("/profile", validate(updateProfileSchema), async (req, res, next) =
         bio || "",
         req.user.sub
       ]
+    );
+
+    if (result.rowCount === 0) {
+      throw new HttpError(404, "Пользователь не найден");
+    }
+
+    return res.json({ item: result.rows[0] });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch("/theme", validate(updateThemeSchema), async (req, res, next) => {
+  try {
+    const { theme } = req.validated.body;
+
+    const result = await pool.query(
+      `UPDATE users
+       SET theme = $1, updated_at = NOW()
+       WHERE id = $2
+       RETURNING ${profileFields}`,
+      [theme, req.user.sub]
     );
 
     if (result.rowCount === 0) {

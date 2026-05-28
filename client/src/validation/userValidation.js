@@ -25,13 +25,24 @@ export function validatePersonName(value, label) {
   return "";
 }
 
+export function getPasswordChecks(password) {
+  return [
+    { id: "len", label: "Не менее 8 символов", ok: password.length >= 8 },
+    { id: "lower", label: "Строчная буква", ok: /[a-zа-яё]/.test(password) },
+    { id: "upper", label: "Прописная буква", ok: /[A-ZА-ЯЁ]/.test(password) },
+    { id: "digit", label: "Цифра", ok: /\d/.test(password) },
+    { id: "special", label: "Спецсимвол", ok: /[^A-Za-zА-Яа-яЁё0-9]/.test(password) }
+  ];
+}
+
 export function validatePassword(password) {
-  if (password.length < 8) return "Пароль не менее 8 символов";
-  if (!/[a-zа-яё]/.test(password)) return "Нужны строчные буквы";
-  if (!/[A-ZА-ЯЁ]/.test(password)) return "Нужны прописные буквы";
-  if (!/\d/.test(password)) return "Нужны цифры";
-  if (!/[^A-Za-zА-Яа-яЁё0-9]/.test(password)) return "Нужен спецсимвол";
-  return "";
+  const failed = getPasswordChecks(password).find((item) => !item.ok);
+  if (!failed) return "";
+  if (failed.id === "len") return "Пароль не менее 8 символов";
+  if (failed.id === "lower") return "Нужны строчные буквы";
+  if (failed.id === "upper") return "Нужны прописные буквы";
+  if (failed.id === "digit") return "Нужны цифры";
+  return "Нужен спецсимвол";
 }
 
 export function validateLogin(login) {

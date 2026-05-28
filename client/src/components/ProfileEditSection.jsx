@@ -86,40 +86,40 @@ export default function ProfileEditSection({ profile, token, onUpdated, onCancel
           </button>
         )}
       </div>
-      <p className="mb-4 text-sm text-slate-500">
+      <p className="mb-4 text-sm text-muted">
         Эти данные подставляются при создании мероприятий (организатор и контакты).
       </p>
 
       <form onSubmit={handleSubmit} className="grid max-w-2xl grid-cols-1 gap-3 text-sm sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-slate-600">Имя</label>
+          <label className="form-label mb-1 block">Имя</label>
           <input className={inputCls("firstName")} value={form.firstName} onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))} />
           {errors.firstName && <p className="mt-1 text-xs text-rose-600">{errors.firstName}</p>}
         </div>
         <div>
-          <label className="mb-1 block text-slate-600">Фамилия</label>
+          <label className="form-label mb-1 block">Фамилия</label>
           <input className={inputCls("lastName")} value={form.lastName} onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))} />
           {errors.lastName && <p className="mt-1 text-xs text-rose-600">{errors.lastName}</p>}
         </div>
         <div>
-          <label className="mb-1 block text-slate-600">Телефон</label>
+          <label className="form-label mb-1 block">Телефон</label>
           <input className="input-field" placeholder="+7 ..." value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
         </div>
         <div>
-          <label className="mb-1 block text-slate-600">Telegram</label>
+          <label className="form-label mb-1 block">Telegram</label>
           <input className="input-field" placeholder="@username" value={form.telegram} onChange={(e) => setForm((p) => ({ ...p, telegram: e.target.value }))} />
         </div>
         <div>
-          <label className="mb-1 block text-slate-600">VK</label>
+          <label className="form-label mb-1 block">VK</label>
           <input className="input-field" placeholder="id или ссылка" value={form.vkUrl} onChange={(e) => setForm((p) => ({ ...p, vkUrl: e.target.value }))} />
         </div>
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-slate-600">Фото (URL или файл до 2 МБ)</label>
+          <label className="form-label mb-1 block">Фото (URL или файл до 2 МБ)</label>
           <input className="input-field mb-2" placeholder="https://..." value={form.avatarUrl.startsWith("data:") ? "" : form.avatarUrl} onChange={(e) => setForm((p) => ({ ...p, avatarUrl: e.target.value }))} />
           <input type="file" accept="image/*" className="text-xs" onChange={handleAvatarFile} />
         </div>
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-slate-600">О себе</label>
+          <label className="form-label mb-1 block">О себе</label>
           <textarea className="input-field" rows={3} value={form.bio} onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))} />
         </div>
         <div className="sm:col-span-2">

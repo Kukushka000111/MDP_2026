@@ -15,6 +15,8 @@ export default function ReportEventModal({ open, eventTitle, onClose, onSubmit }
     try {
       await onSubmit(reason.trim());
       onClose();
+    } catch {
+      // ошибка показана в App через toast
     } finally {
       setSubmitting(false);
     }
@@ -22,15 +24,15 @@ export default function ReportEventModal({ open, eventTitle, onClose, onSubmit }
 
   return (
     <ModalOverlay open={open} onClose={onClose}>
-      <div className="mx-auto w-full max-w-md rounded-xl bg-white p-5 shadow-xl">
-        <h3 className="text-lg font-semibold text-slate-900">Пожаловаться на мероприятие</h3>
-        {eventTitle && <p className="mt-1 text-sm text-slate-600">{eventTitle}</p>}
-        <p className="mt-2 text-sm text-slate-500">
+      <div className="mx-auto w-full max-w-md rounded-xl bg-white p-5 shadow-xl dark:bg-slate-900 dark:shadow-slate-950/50">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Пожаловаться на мероприятие</h3>
+        {eventTitle && <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{eventTitle}</p>}
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           Опишите, что не так. Жалобу увидят модераторы.
         </p>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <textarea
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="input-field text-sm"
             rows={4}
             maxLength={1000}
             placeholder="Причина жалобы (необязательно)"

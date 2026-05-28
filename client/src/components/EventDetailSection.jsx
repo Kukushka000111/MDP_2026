@@ -117,20 +117,22 @@ export default function EventDetailSection({
           </button>
 
           {eventDetails.image_url ? (
-            <img
-              src={eventDetails.image_url}
-              alt={eventDetails.title}
-              className="aspect-[21/9] w-full rounded-2xl object-cover shadow-sm"
-            />
+            <div className="overflow-hidden rounded-2xl bg-slate-100 shadow-sm">
+              <img
+                src={eventDetails.image_url}
+                alt={eventDetails.title}
+                className="mx-auto max-h-[min(28rem,70vh)] w-full object-contain"
+              />
+            </div>
           ) : (
-            <div className="flex aspect-[21/9] w-full items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-slate-100 text-4xl font-black text-slate-300">
+            <div className="flex min-h-[12rem] w-full items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-50 to-slate-100 text-4xl font-black text-slate-300">
               {eventDetails.title?.charAt(0) || "?"}
             </div>
           )}
 
           <div>
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <h1 className="text-3xl font-black leading-tight text-slate-900">{eventDetails.title}</h1>
+              <h1 className="text-3xl font-black leading-tight text-slate-900 dark:text-slate-100">{eventDetails.title}</h1>
               {badge && (
                 <span
                   className={`rounded-2xl px-3 py-1 text-xs font-bold ${
@@ -153,21 +155,21 @@ export default function EventDetailSection({
           </div>
 
           <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-            <div className="rounded-2xl bg-slate-50 px-4 py-3">
+            <div className="surface-muted px-4 py-3">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Адрес</dt>
-              <dd className="mt-1 font-medium text-slate-900">{eventLocationLabel(eventDetails, showLocation)}</dd>
+              <dd className="mt-1 font-medium text-slate-900 dark:text-slate-100">{eventLocationLabel(eventDetails, showLocation)}</dd>
             </div>
-            <div className="rounded-2xl bg-slate-50 px-4 py-3">
+            <div className="surface-muted px-4 py-3">
               <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">Тип</dt>
-              <dd className="mt-1 font-medium text-slate-900">
+              <dd className="mt-1 font-medium text-slate-900 dark:text-slate-100">
                 {eventDetails.event_type === "OFFICIAL" ? "Официальное" : "От жителей"}
               </dd>
             </div>
           </dl>
 
           {showContacts && (
-            <div className="rounded-2xl border border-slate-100 bg-white p-4">
-              <h3 className="text-sm font-bold text-slate-900">Контакты организатора</h3>
+            <div className="card-surface p-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Контакты организатора</h3>
               <OrganizerContacts event={eventDetails} />
             </div>
           )}
@@ -179,8 +181,8 @@ export default function EventDetailSection({
           )}
 
           {canLoadAttendees && attendees.length > 0 && (
-            <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
-              <h3 className="mb-3 text-sm font-bold text-slate-900">Участники ({attendees.length})</h3>
+            <div className="surface-muted p-4">
+              <h3 className="mb-3 text-sm font-bold text-slate-900 dark:text-slate-100">Участники ({attendees.length})</h3>
               <ul className="flex flex-wrap gap-2">
                 {attendees.map((person) => (
                   <li key={person.id}>
@@ -189,7 +191,7 @@ export default function EventDetailSection({
                       name={person.display_name || person.login}
                       avatarUrl={person.avatar_url}
                       onOpenUser={onOpenUser}
-                      className="rounded-2xl bg-white px-3 py-1.5 text-sm font-medium shadow-sm ring-1 ring-slate-100"
+                      className="rounded-2xl bg-white px-3 py-1.5 text-sm font-medium text-slate-800 shadow-sm ring-1 ring-slate-100 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600"
                     />
                   </li>
                 ))}
@@ -222,7 +224,7 @@ export default function EventDetailSection({
             <div className="mt-4 space-y-4">
               {(reviewsByEvent[eventDetails.id] || []).map((review) => (
                 <div key={review.id} className="border-b border-slate-100 pb-4 last:border-0">
-                  <p className="font-semibold text-slate-900">
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">
                     {review.display_name} · {review.rating}/5
                   </p>
                   <p className="mt-1 text-sm text-slate-600">{review.body}</p>
@@ -248,7 +250,7 @@ export default function EventDetailSection({
                   <p className="text-xs text-slate-500">Отзыв доступен после завершения мероприятия.</p>
                 )}
                 <select
-                  className="input-field text-sm disabled:bg-slate-50"
+                  className="input-field text-sm disabled:opacity-70 dark:disabled:bg-slate-800"
                   disabled={!canReview}
                   value={reviewForm.rating}
                   onChange={(event) => setReviewForm((prev) => ({ ...prev, rating: event.target.value }))}
@@ -260,7 +262,7 @@ export default function EventDetailSection({
                   ))}
                 </select>
                 <textarea
-                  className="input-field text-sm disabled:bg-slate-50"
+                  className="input-field text-sm disabled:opacity-70 dark:disabled:bg-slate-800"
                   rows={3}
                   disabled={!canReview}
                   placeholder={canReview ? "Ваш отзыв" : "Запишитесь и дождитесь окончания мероприятия"}
@@ -281,9 +283,9 @@ export default function EventDetailSection({
         </div>
 
         <aside className="lg:col-span-1">
-          <div className="sticky top-6 space-y-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-xl">
+          <div className="card-surface sticky top-6 space-y-6 p-6 shadow-xl">
             <div className="flex items-center gap-2">
-              <svg className="h-5 w-5 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+              <svg className="h-5 w-5 text-slate-900 dark:text-slate-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -291,7 +293,7 @@ export default function EventDetailSection({
                   d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              <p className={`text-lg font-bold ${spots.isFull && !hasRegistration ? "text-rose-600" : "text-slate-900"}`}>
+              <p className={`text-lg font-bold ${spots.isFull && !hasRegistration ? "text-rose-600 dark:text-rose-400" : "text-slate-900 dark:text-slate-100"}`}>
                 {spots.label}
               </p>
             </div>
@@ -304,7 +306,7 @@ export default function EventDetailSection({
                   className="h-14 w-14 rounded-full object-cover ring-2 ring-white"
                 />
               ) : (
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50 text-lg font-bold text-slate-900">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50 text-lg font-bold text-slate-900 dark:bg-indigo-950 dark:text-indigo-200">
                   {(eventDetails.organizer_name || "?").charAt(0)}
                 </div>
               )}
@@ -313,7 +315,7 @@ export default function EventDetailSection({
                   userId={eventDetails.created_by}
                   name={eventDetails.organizer_name}
                   onOpenUser={onOpenUser}
-                  className="text-base font-bold text-slate-900"
+                  className="text-base font-bold text-slate-900 dark:text-slate-100"
                 />
                 <p className="text-xs text-slate-500">{platformTenureLabel(eventDetails.organizer_member_since)}</p>
                 <p className="text-xs text-slate-500">{organizerEventsLabel(eventDetails.organizer_events_count)}</p>
@@ -326,7 +328,7 @@ export default function EventDetailSection({
             </div>
 
             {status && (
-              <div className="rounded-2xl bg-slate-50 px-4 py-3">
+              <div className="surface-muted px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Ваша заявка</p>
                 <span
                   className={`mt-1 inline-block px-3 py-1 text-xs font-bold ${registrationStatusPillClass(status)}`}

@@ -28,7 +28,8 @@ function publicUser(row) {
     last_name: row.last_name,
     display_name: row.display_name,
     gender: row.gender,
-    role: row.role
+    role: row.role,
+    theme: row.theme || "light"
   };
 }
 
@@ -157,7 +158,7 @@ router.get("/me", requireAuth, async (req, res, next) => {
   try {
     const result = await pool.query(
       `SELECT id, email, login, first_name, last_name, display_name,
-              phone, avatar_url, vk_url, telegram, gender, is_adult, role, created_at
+              phone, avatar_url, vk_url, telegram, gender, is_adult, role, theme, created_at
        FROM users WHERE id = $1`,
       [req.user.sub]
     );
