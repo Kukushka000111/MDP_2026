@@ -62,12 +62,10 @@ router.get("/events/moderation-queue", validate(listModerationQueueSchema), asyn
           e.id, e.title, e.description, e.address, e.starts_at, e.ends_at,
           e.event_type, e.moderation_status, e.moderation_comment, e.created_at,
           c.name AS category_name,
-          d.name AS district_name,
           u.display_name AS created_by_name,
           u.email AS created_by_email
        FROM events e
        JOIN categories c ON c.id = e.category_id
-       JOIN districts d ON d.id = e.district_id
        JOIN users u ON u.id = e.created_by
        WHERE ${whereSql}
        ORDER BY e.created_at ASC`,
@@ -114,6 +112,9 @@ router.patch("/events/:eventId/moderation", validate(moderateEventSchema), async
        RETURNING *`,
       [status, moderationComment || "", req.user.sub, eventId]
     );
+
+    const { notifyModerationResult } = require("../utils/notifications");
+    await notifyModerationResult(eventId, status, result.rows[0]?.title);
 
     return res.json({ item: result.rows[0] });
   } catch (error) {

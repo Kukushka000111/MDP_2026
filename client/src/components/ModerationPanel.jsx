@@ -32,7 +32,7 @@ export default function ModerationPanel({
           <div key={item.id} className="mb-2 rounded border p-2">
             <p className="font-medium">{item.title}</p>
             <p className="text-xs text-slate-500">{item.created_by_name} · {moderationStatusLabel(item.moderation_status)}</p>
-            <p className="text-xs text-slate-500">{item.category_name} · {item.district_name}</p>
+            <p className="text-xs text-slate-500">{item.category_name}</p>
             <textarea
               className="mt-2 w-full rounded border px-2 py-1 text-xs"
               rows={2}

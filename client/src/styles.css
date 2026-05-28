@@ -14,3 +14,11 @@ body {
   background: #f8fafc;
   color: #0f172a;
 }
+
+/* Leaflet panes default to ~400; keep maps under modals */
+body.modal-open .leaflet-container,
+body.modal-open .leaflet-pane,
+body.modal-open .leaflet-top,
+body.modal-open .leaflet-bottom {
+  z-index: 10 !important;
+}

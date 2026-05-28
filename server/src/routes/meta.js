@@ -14,17 +14,6 @@ router.get("/categories", async (_req, res, next) => {
   }
 });
 
-router.get("/districts", async (_req, res, next) => {
-  try {
-    const result = await pool.query(
-      "SELECT id, name FROM districts ORDER BY name ASC"
-    );
-    return res.json({ items: result.rows });
-  } catch (error) {
-    return next(error);
-  }
-});
-
 router.get("/geocode", async (req, res, next) => {
   try {
     const q = String(req.query.q || "").trim();

@@ -7,6 +7,8 @@ const metaRoutes = require("./routes/meta");
 const favoriteRoutes = require("./routes/favorites");
 const reviewRoutes = require("./routes/reviews");
 const meRoutes = require("./routes/me");
+const userRoutes = require("./routes/users");
+const notificationRoutes = require("./routes/notifications");
 const errorHandler = require("./middleware/error-handler");
 
 const app = express();
@@ -25,6 +27,8 @@ app.use("/api/meta", metaRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/me", meRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use(errorHandler);
 

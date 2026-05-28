@@ -42,7 +42,16 @@ router.post("/", requireAuth, validate(createReviewSchema), async (req, res, nex
     }
 
     if (new Date(event.ends_at) > new Date()) {
-      throw new HttpError(400, "Review can be added only after event has ended");
+      throw new HttpError(400, "Отзыв можно оставить только после окончания мероприятия");
+    }
+
+    const registration = await pool.query(
+      `SELECT 1 FROM event_registrations
+       WHERE user_id = $1 AND event_id = $2 AND status = 'APPROVED'`,
+      [req.user.sub, eventId]
+    );
+    if (registration.rowCount === 0) {
+      throw new HttpError(403, "Отзыв могут оставить только записавшиеся на мероприятие");
     }
 
     const result = await pool.query(

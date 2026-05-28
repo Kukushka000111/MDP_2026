@@ -7,7 +7,6 @@ import {
   checkApiHealth,
   createEvent,
   deleteEvent,
-  geocodeAddress,
   getAdminStats,
   getEventDetails,
   getEvents,
@@ -18,26 +17,40 @@ import {
   getMyCreatedEvents,
   getMyProfile,
   getParticipants,
+  getUserProfile,
   getReviews,
+  reportEvent,
   getServerFavorites,
   leaveEvent,
-  login,
   moderateEvent,
-  register,
   removeServerFavorite,
+  reviewEventRegistration,
   updateEvent,
   upsertReview
 } from "./api";
 import AppHeader from "./components/AppHeader";
-import AppNav from "./components/AppNav";
+import ReportEventModal from "./components/ReportEventModal";
+import AttendApplyModal from "./components/AttendApplyModal";
 import EventDetailSection from "./components/EventDetailSection";
 import EventFormSection from "./components/EventFormSection";
+import EventListRow from "./components/EventListRow";
 import FeedSection from "./components/FeedSection";
 import ModerationPanel from "./components/ModerationPanel";
 import MyEventsSection from "./components/MyEventsSection";
+import LoginPage from "./components/LoginPage";
+import ProfileEditSection from "./components/ProfileEditSection";
+import UserProfileView from "./components/UserProfileView";
+import RegisterPage from "./components/RegisterPage";
 import Toast from "./Toast";
 import { FAVORITES_KEY, PAGE_SIZE, PAGE_TITLES, PAGES, TOKEN_KEY } from "./constants";
-import { EMPTY_EVENT_FORM, readImageFileAsDataUrl, toDatetimeLocalValue } from "./utils";
+import {
+  EMPTY_EVENT_FORM,
+  readImageFileAsDataUrl,
+  registrationStatusClass,
+  registrationStatusLabel,
+  toDatetimeLocalValue,
+  validateEventForm
+} from "./utils";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -48,14 +61,17 @@ L.Icon.Default.mergeOptions({
 
 function parseHashRoute() {
   const raw = window.location.hash.replace(/^#/, "");
-  if (!raw) return { page: PAGES.FEED, eventId: "" };
+  if (!raw) return { page: PAGES.FEED, eventId: "", userId: "" };
   if (raw.startsWith("event/")) {
-    return { page: PAGES.EVENT, eventId: raw.split("/")[1] || "" };
+    return { page: PAGES.EVENT, eventId: raw.slice(6), userId: "" };
+  }
+  if (raw.startsWith("user/")) {
+    return { page: PAGES.USER, eventId: "", userId: raw.slice(5) };
   }
   if (Object.values(PAGES).includes(raw)) {
-    return { page: raw, eventId: "" };
+    return { page: raw, eventId: "", userId: "" };
   }
-  return { page: PAGES.FEED, eventId: "" };
+  return { page: PAGES.FEED, eventId: "", userId: "" };
 }
 
 function parseLocalFavorites() {
@@ -68,13 +84,6 @@ function parseLocalFavorites() {
   }
 }
 
-function isPreciseAddress(address) {
-  const normalized = address.trim();
-  const hasComma = normalized.includes(",");
-  const hasHouseNumber = /\d/.test(normalized);
-  return hasComma && hasHouseNumber;
-}
-
 export default function App() {
   const initialRoute = parseHashRoute();
   const [page, setPage] = useState(initialRoute.page);
@@ -85,7 +94,9 @@ export default function App() {
   const [adminStats, setAdminStats] = useState(null);
   const [eventDetails, setEventDetails] = useState(null);
   const [routeEventId, setRouteEventId] = useState(initialRoute.eventId);
-  const [meta, setMeta] = useState({ categories: [], districts: [] });
+  const [routeUserId, setRouteUserId] = useState(initialRoute.userId);
+  const [viewedProfile, setViewedProfile] = useState(null);
+  const [meta, setMeta] = useState({ categories: [] });
   const [favorites, setFavorites] = useState(parseLocalFavorites);
   const [token, setToken] = useState(localStorage.getItem(TOKEN_KEY) || "");
   const [user, setUser] = useState(null);
@@ -93,7 +104,6 @@ export default function App() {
   const [myEvents, setMyEvents] = useState([]);
   const [myAttending, setMyAttending] = useState([]);
   const [participantsByEvent, setParticipantsByEvent] = useState({});
-  const [authForm, setAuthForm] = useState({ mode: "login", email: "", password: "", displayName: "" });
   const [eventForm, setEventForm] = useState(EMPTY_EVENT_FORM);
   const [editingEventId, setEditingEventId] = useState("");
   const [apiOffline, setApiOffline] = useState(false);
@@ -106,29 +116,89 @@ export default function App() {
   const [activeEventId, setActiveEventId] = useState("");
   const [reviewsByEvent, setReviewsByEvent] = useState({});
   const [reviewForm, setReviewForm] = useState({ rating: 5, body: "" });
-  const [geocodeCandidates, setGeocodeCandidates] = useState([]);
+  const [attendModal, setAttendModal] = useState({ open: false, eventId: "", title: "" });
+  const [reportModal, setReportModal] = useState({ open: false, eventId: "", title: "" });
   const [eventSubmitMessage, setEventSubmitMessage] = useState("");
   const [eventSubmitError, setEventSubmitError] = useState("");
+  const [eventFieldErrors, setEventFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({ q: "", categoryId: "", districtId: "", dateFrom: "", dateTo: "" });
+  const [filters, setFilters] = useState({
+    q: "",
+    categoryId: "",
+    eventType: "",
+    dateFrom: "",
+    dateTo: ""
+  });
 
-  function navigate(nextPage, eventId = "") {
+  function applyRoute(route) {
+    setPage(route.page);
+    setRouteEventId(route.eventId);
+    setRouteUserId(route.userId);
+  }
+
+  function navigate(nextPage, eventId = "", userId = "") {
     if (nextPage === PAGES.EVENT && eventId) {
-      window.location.hash = `event/${eventId}`;
+      applyRoute({ page: PAGES.EVENT, eventId, userId: "" });
+      const target = `event/${eventId}`;
+      if (window.location.hash.replace(/^#/, "") !== target) {
+        window.location.hash = target;
+      }
       return;
     }
-    window.location.hash = nextPage;
+    if (nextPage === PAGES.USER && userId) {
+      applyRoute({ page: PAGES.USER, eventId: "", userId });
+      const target = `user/${userId}`;
+      if (window.location.hash.replace(/^#/, "") !== target) {
+        window.location.hash = target;
+      }
+      return;
+    }
+    applyRoute({ page: nextPage, eventId: "", userId: "" });
+    if (window.location.hash.replace(/^#/, "") !== nextPage) {
+      window.location.hash = nextPage;
+    }
+  }
+
+  function openUserProfile(userId) {
+    if (!userId) return;
+    navigate(PAGES.USER, "", userId);
   }
 
   useEffect(() => {
     function onHashChange() {
-      const route = parseHashRoute();
-      setPage(route.page);
-      setRouteEventId(route.eventId);
+      applyRoute(parseHashRoute());
     }
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
+
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        if (page === PAGES.PROFILE) {
+          const profile = await getMyProfile(token);
+          if (!cancelled) setMyProfile(profile);
+        }
+        if (page === PAGES.ATTENDING) {
+          const attending = await getMyAttendingEvents(token);
+          if (!cancelled) setMyAttending(attending);
+        }
+        if (page === PAGES.MY_EVENTS) {
+          const created = await getMyCreatedEvents(token);
+          if (!cancelled) setMyEvents(created);
+        }
+      } catch (error) {
+        if (!cancelled) showToast(error.message, "error");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [page, token]);
 
   function showToast(message, type = "info") {
     const id = `${Date.now()}-${Math.random()}`;
@@ -157,6 +227,15 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
   }, [favorites]);
+
+  useEffect(() => {
+    if (!token && [PAGES.PROFILE, PAGES.MY_EVENTS, PAGES.ATTENDING, PAGES.MODERATION].includes(page)) {
+      navigate(PAGES.LOGIN);
+    }
+    if (token && (page === PAGES.LOGIN || page === PAGES.REGISTER)) {
+      navigate(PAGES.FEED);
+    }
+  }, [token, page]);
 
   useEffect(() => {
     (async () => {
@@ -204,7 +283,7 @@ export default function App() {
 
   useEffect(() => {
     setEventsPage(1);
-  }, [filters.categoryId, filters.districtId, filters.dateFrom, filters.dateTo, debouncedQ]);
+  }, [filters.categoryId, filters.eventType, filters.dateFrom, filters.dateTo, debouncedQ]);
 
   useEffect(() => {
     loadEvents(eventsPage);
@@ -248,12 +327,53 @@ export default function App() {
     })();
   }, [token, user, moderationFilter]);
 
-  const attendingIds = useMemo(() => new Set(myAttending.map((item) => item.id)), [myAttending]);
+  const registrationStatusMap = useMemo(() => {
+    const map = new Map();
+    myAttending.forEach((item) => {
+      map.set(item.id, item.registration_status);
+    });
+    return map;
+  }, [myAttending]);
+
   const favoriteEvents = useMemo(
     () => events.filter((event) => favorites.includes(event.id)),
     [events, favorites]
   );
   const myEventIds = useMemo(() => new Set(myEvents.map((item) => item.id)), [myEvents]);
+
+  const organizerPreview = useMemo(() => {
+    if (!myProfile) return null;
+    const name = `${myProfile.first_name || ""} ${myProfile.last_name || ""}`.trim()
+      || myProfile.display_name;
+    return {
+      name,
+      phone: myProfile.phone,
+      telegram: myProfile.telegram,
+      vkUrl: myProfile.vk_url
+    };
+  }, [myProfile]);
+
+  useEffect(() => {
+    if (page !== PAGES.USER || !routeUserId) {
+      setViewedProfile(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const item = await getUserProfile(routeUserId, token);
+        if (!cancelled) setViewedProfile(item);
+      } catch (error) {
+        if (!cancelled) {
+          setViewedProfile(null);
+          showToast(error.message, "error");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [page, routeUserId, token]);
 
   async function toggleFavorite(id) {
     const isActive = favorites.includes(id);
@@ -272,31 +392,105 @@ export default function App() {
     }
   }
 
-  async function toggleAttend(eventId, isAttending) {
+  async function refreshAttendState(eventId) {
+    setMyAttending(await getMyAttendingEvents(token));
+    await loadEvents(eventsPage);
+    if (page === PAGES.EVENT && routeEventId === eventId) {
+      setEventDetails(await getEventDetails(eventId, token));
+    }
+  }
+
+  function handleAttendAction(eventId, currentStatus) {
+    if (!token) return;
+    const event =
+      events.find((item) => item.id === eventId) || (eventDetails?.id === eventId ? eventDetails : null);
+    if (event && (event.created_by === user?.id || myEventIds.has(eventId))) {
+      showToast("Организатор не может записаться на своё мероприятие", "error");
+      return;
+    }
+    if (currentStatus === "APPROVED" || currentStatus === "PENDING") {
+      cancelAttend(eventId, currentStatus);
+      return;
+    }
+    const eventTitle =
+      events.find((item) => item.id === eventId)?.title || eventDetails?.title || "";
+    setAttendModal({ open: true, eventId, title: eventTitle });
+  }
+
+  async function cancelAttend(eventId, currentStatus) {
     if (!token) return;
     try {
-      if (isAttending) await leaveEvent(token, eventId);
-      else await attendEvent(token, eventId);
-      setMyAttending(await getMyAttendingEvents(token));
-      await loadEvents(eventsPage);
-      showToast(isAttending ? "Запись отменена" : "Вы записаны на мероприятие", "success");
+      await leaveEvent(token, eventId);
+      await refreshAttendState(eventId);
+      showToast(
+        currentStatus === "PENDING" ? "Заявка отменена" : "Запись отменена",
+        "success"
+      );
     } catch (error) {
       showToast(error.message, "error");
     }
   }
 
-  async function onAuthSubmit(event) {
-    event.preventDefault();
+  async function submitAttendApplication(message) {
+    if (!token || !attendModal.eventId) return;
     try {
-      const result = authForm.mode === "register"
-        ? await register({ email: authForm.email, password: authForm.password, displayName: authForm.displayName })
-        : await login({ email: authForm.email, password: authForm.password });
-      setToken(result.token);
-      setAuthForm((prev) => ({ ...prev, password: "" }));
-      showToast(authForm.mode === "register" ? "Регистрация успешна" : "Вход выполнен", "success");
+      await attendEvent(token, attendModal.eventId, message);
+      await refreshAttendState(attendModal.eventId);
+      showToast("Заявка отправлена организатору", "success");
+    } catch (error) {
+      showToast(error.message, "error");
+      throw error;
+    }
+  }
+
+  async function handleReviewRegistration(eventId, userId, status) {
+    if (!token) return;
+    try {
+      await reviewEventRegistration(token, eventId, userId, status);
+      const items = await getParticipants(token, eventId);
+      setParticipantsByEvent((prev) => ({ ...prev, [eventId]: items }));
+      setMyEvents(await getMyCreatedEvents(token));
+      await loadEvents(eventsPage);
+      showToast(status === "APPROVED" ? "Заявка одобрена" : "Заявка отклонена", "success");
     } catch (error) {
       showToast(error.message, "error");
     }
+  }
+
+  function handleProfileUpdated(item) {
+    setMyProfile(item);
+    if (viewedProfile?.id === item.id) {
+      setViewedProfile(item);
+    }
+    setUser((prev) =>
+      prev
+        ? {
+          ...prev,
+          display_name: item.display_name,
+          first_name: item.first_name,
+          last_name: item.last_name
+        }
+        : prev
+    );
+    if (page === PAGES.PROFILE_EDIT) {
+      navigate(PAGES.PROFILE);
+    }
+  }
+
+  async function handleAuthSuccess(result) {
+    setToken(result.token);
+    setUser(result.user);
+    localStorage.setItem(TOKEN_KEY, result.token);
+    const profile = await getMyProfile(result.token);
+    setMyProfile(profile);
+    const [created, attending] = await Promise.all([
+      getMyCreatedEvents(result.token),
+      getMyAttendingEvents(result.token)
+    ]);
+    setMyEvents(created);
+    setMyAttending(attending);
+    navigate(PAGES.FEED);
+    showToast("Добро пожаловать!", "success");
   }
 
   function logout() {
@@ -311,20 +505,31 @@ export default function App() {
   }
 
   function buildEventPayload() {
+    const maxParticipants =
+      eventForm.maxParticipants === "" || eventForm.maxParticipants == null
+        ? null
+        : Number(eventForm.maxParticipants);
+
     return {
-      ...eventForm,
+      title: eventForm.title,
+      description: eventForm.description || "",
+      categoryId: eventForm.categoryId,
+      address: eventForm.address,
+      addressPublic: Boolean(eventForm.addressPublic),
       latitude: eventForm.latitude ? Number(eventForm.latitude) : null,
       longitude: eventForm.longitude ? Number(eventForm.longitude) : null,
+      imageUrl: eventForm.imageUrl || "",
       startsAt: new Date(eventForm.startsAt).toISOString(),
       endsAt: new Date(eventForm.endsAt).toISOString(),
-      imageUrl: eventForm.imageUrl || ""
+      maxParticipants,
+      eventType: eventForm.eventType
     };
   }
 
   function resetEventForm() {
     setEventForm(EMPTY_EVENT_FORM);
     setEditingEventId("");
-    setGeocodeCandidates([]);
+    setEventFieldErrors({});
   }
 
   function startEditEvent(item) {
@@ -333,21 +538,20 @@ export default function App() {
       title: item.title || "",
       description: item.description || "",
       categoryId: item.category_id || "",
-      districtId: item.district_id || "",
       address: item.address || "",
+      addressPublic: item.address_public === true || item.address_public === "t",
       latitude: item.latitude != null ? String(item.latitude) : "",
       longitude: item.longitude != null ? String(item.longitude) : "",
-      organizerName: item.organizer_name || "",
-      organizerContact: item.organizer_contact || "",
       imageUrl: item.image_url || "",
       startsAt: toDatetimeLocalValue(item.starts_at),
       endsAt: toDatetimeLocalValue(item.ends_at),
-      eventType: item.event_type || "COMMUNITY"
+      eventType: item.event_type || "COMMUNITY",
+      maxParticipants: item.max_participants != null ? String(item.max_participants) : ""
     });
     setEventSubmitMessage("");
     setEventSubmitError("");
-    navigate(PAGES.FEED);
-    showToast("Режим редактирования: измените поля и нажмите «Сохранить»");
+    navigate(PAGES.CREATE_EVENT);
+    showToast("Измените поля и нажмите «Сохранить»");
   }
 
   async function handleImageFileChange(event) {
@@ -368,24 +572,10 @@ export default function App() {
     if (!token) return;
     setEventSubmitMessage("");
     setEventSubmitError("");
-
-    if (
-      !eventForm.title ||
-      !eventForm.address ||
-      !eventForm.organizerName ||
-      !eventForm.categoryId ||
-      !eventForm.districtId ||
-      !eventForm.startsAt ||
-      !eventForm.endsAt
-    ) {
-      const message = "Заполните обязательные поля: название, адрес, организатор, категория, район, даты.";
-      setEventSubmitError(message);
-      showToast(message, "error");
-      return;
-    }
-
-    if (new Date(eventForm.startsAt) > new Date(eventForm.endsAt)) {
-      const message = "Дата окончания должна быть позже даты начала.";
+    const fieldErrors = validateEventForm(eventForm);
+    setEventFieldErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) {
+      const message = Object.values(fieldErrors)[0];
       setEventSubmitError(message);
       showToast(message, "error");
       return;
@@ -403,8 +593,10 @@ export default function App() {
         showToast("Мероприятие создано", "success");
       }
       resetEventForm();
+      setEventFieldErrors({});
       await loadEvents(1);
       setMyEvents(await getMyCreatedEvents(token));
+      navigate(PAGES.MY_EVENTS);
     } catch (error) {
       const message = error?.message || "Не удалось сохранить мероприятие.";
       setEventSubmitError(message);
@@ -430,27 +622,6 @@ export default function App() {
     } catch (error) {
       showToast(error.message, "error");
     }
-  }
-
-  async function geocodeCurrentAddress() {
-    if (!isPreciseAddress(eventForm.address)) {
-      return;
-    }
-    const query = /омск/i.test(eventForm.address)
-      ? eventForm.address
-      : `Омск, ${eventForm.address}`;
-    const result = await geocodeAddress(query);
-    if (!result) return;
-    setGeocodeCandidates(result);
-  }
-
-  function applyGeocodeCandidate(candidate) {
-    setEventForm((prev) => ({
-      ...prev,
-      latitude: String(candidate.latitude),
-      longitude: String(candidate.longitude)
-    }));
-    setGeocodeCandidates([]);
   }
 
   async function openReviews(eventId) {
@@ -502,14 +673,49 @@ export default function App() {
     }
   }
 
+  function openReportModal(eventId, title = "") {
+    if (!token) return;
+    setReportModal({ open: true, eventId, title });
+  }
+
+  async function submitReport(reason) {
+    if (!token || !reportModal.eventId) return;
+    await reportEvent(token, reportModal.eventId, reason);
+    showToast("Жалоба отправлена модераторам", "success");
+  }
+
   function resetFilters() {
-    setFilters({ q: "", categoryId: "", districtId: "", dateFrom: "", dateTo: "" });
+    setFilters({
+      q: "",
+      categoryId: "",
+      eventType: "",
+      dateFrom: "",
+      dateTo: ""
+    });
   }
 
   return (
     <div className="min-h-full">
       <Toast toasts={toasts} />
-      <AppHeader token={token} authForm={authForm} setAuthForm={setAuthForm} onAuthSubmit={onAuthSubmit} onLogout={logout} />
+      <AttendApplyModal
+        open={attendModal.open}
+        eventTitle={attendModal.title}
+        onClose={() => setAttendModal({ open: false, eventId: "", title: "" })}
+        onSubmit={submitAttendApplication}
+      />
+      <ReportEventModal
+        open={reportModal.open}
+        eventTitle={reportModal.title}
+        onClose={() => setReportModal({ open: false, eventId: "", title: "" })}
+        onSubmit={submitReport}
+      />
+      <AppHeader
+        token={token}
+        userRole={user?.role}
+        onNavigate={navigate}
+        onLogout={logout}
+        showToast={showToast}
+      />
 
       <main className="mx-auto max-w-7xl px-4 py-4">
         {(apiOffline || metaError) && (
@@ -517,21 +723,49 @@ export default function App() {
             Сервер API недоступен. Запустите бэкенд: <code className="rounded bg-amber-100 px-1">npm run dev:server</code>
           </div>
         )}
-        <AppNav token={token} userRole={user?.role} onNavigate={navigate} />
-
         <section className="mb-3 text-xs text-slate-500">
           <span className="rounded bg-slate-100 px-2 py-1">Главная</span>
           {page !== PAGES.FEED && <span> / </span>}
           {page !== PAGES.FEED && <span className="rounded bg-slate-100 px-2 py-1">{PAGE_TITLES[page] || page}</span>}
         </section>
 
-        {page === PAGES.PROFILE && token && myProfile && (
-          <section className="mb-4 rounded-lg bg-white p-4 shadow text-sm">
-            <h2 className="mb-2 text-lg font-semibold">Мой аккаунт</h2>
-            <p><strong>Имя:</strong> {myProfile.display_name}</p>
-            <p><strong>Email:</strong> {myProfile.email}</p>
-            <p><strong>Роль:</strong> {myProfile.role}</p>
-          </section>
+        {page === PAGES.REGISTER && !token && (
+          <RegisterPage onSuccess={handleAuthSuccess} onNavigate={navigate} showToast={showToast} />
+        )}
+
+        {page === PAGES.LOGIN && !token && (
+          <LoginPage onSuccess={handleAuthSuccess} onNavigate={navigate} showToast={showToast} />
+        )}
+
+        {page === PAGES.PROFILE && token && (
+          myProfile ? (
+            <UserProfileView
+              profile={myProfile}
+              isOwn
+              onEdit={() => navigate(PAGES.PROFILE_EDIT)}
+            />
+          ) : (
+            <p className="rounded-lg bg-white p-4 text-sm text-slate-500 shadow">Загрузка профиля…</p>
+          )
+        )}
+
+        {page === PAGES.PROFILE_EDIT && token && myProfile && (
+          <ProfileEditSection
+            profile={myProfile}
+            token={token}
+            onUpdated={handleProfileUpdated}
+            onCancel={() => navigate(PAGES.PROFILE)}
+            showToast={showToast}
+          />
+        )}
+
+        {page === PAGES.USER && (
+          <UserProfileView
+            profile={viewedProfile}
+            isOwn={viewedProfile?.id === user?.id}
+            onEdit={viewedProfile?.id === user?.id ? () => navigate(PAGES.PROFILE_EDIT) : undefined}
+            onBack={() => navigate(PAGES.FEED)}
+          />
         )}
 
         {page === PAGES.EVENT && eventDetails && (
@@ -539,7 +773,9 @@ export default function App() {
             eventDetails={eventDetails}
             token={token}
             favorites={favorites}
-            attendingIds={attendingIds}
+            registrationStatus={
+              registrationStatusMap.get(eventDetails.id) || eventDetails.my_registration_status
+            }
             user={user}
             myEventIds={myEventIds}
             myEvents={myEvents}
@@ -547,12 +783,14 @@ export default function App() {
             reviewForm={reviewForm}
             setReviewForm={setReviewForm}
             onBack={() => navigate(PAGES.FEED)}
-            onToggleAttend={toggleAttend}
+            onAttendAction={handleAttendAction}
             onToggleFavorite={toggleFavorite}
             onEdit={startEditEvent}
             onDelete={onDeleteEvent}
             onOpenReviews={openReviews}
             onSubmitReview={submitReview}
+            onReport={openReportModal}
+            onOpenUser={openUserProfile}
           />
         )}
 
@@ -561,20 +799,29 @@ export default function App() {
             myEvents={myEvents}
             participantsByEvent={participantsByEvent}
             onShowParticipants={showParticipants}
+            onReviewRegistration={handleReviewRegistration}
             onEdit={startEditEvent}
             onOpen={openEventPage}
             onDelete={onDeleteEvent}
+            onOpenUser={openUserProfile}
           />
         )}
 
         {page === PAGES.ATTENDING && token && (
           <section className="mb-4 rounded-lg bg-white p-4 shadow">
-            <h2 className="mb-2 text-lg font-semibold">Куда я записан</h2>
+            <h2 className="mb-2 text-lg font-semibold">Мои заявки и записи</h2>
             {myAttending.map((item) => (
-              <div key={item.id} className="mb-2 rounded border p-2">
-                <p className="font-medium">{item.title}</p>
-                <p className="text-xs text-slate-500">{new Date(item.starts_at).toLocaleString("ru-RU")}</p>
-              </div>
+              <EventListRow
+                key={item.id}
+                title={item.title}
+                subtitle={`${new Date(item.starts_at).toLocaleString("ru-RU")}${item.registration_message ? ` · «${item.registration_message}»` : ""}`}
+                badge={
+                  <span className={`rounded px-2 py-0.5 text-xs ${registrationStatusClass(item.registration_status)}`}>
+                    {registrationStatusLabel(item.registration_status)}
+                  </span>
+                }
+                onOpen={() => openEventPage(item.id)}
+              />
             ))}
             {myAttending.length === 0 && <p className="text-sm text-slate-500">Список пуст.</p>}
           </section>
@@ -584,10 +831,12 @@ export default function App() {
           <section className="mb-4 rounded-lg bg-white p-4 shadow">
             <h2 className="mb-2 text-lg font-semibold">Избранное</h2>
             {favoriteEvents.map((item) => (
-              <div key={item.id} className="mb-2 rounded border p-2">
-                <p className="font-medium">{item.title}</p>
-                <p className="text-xs text-slate-500">{item.category_name} · {item.district_name}</p>
-              </div>
+              <EventListRow
+                key={item.id}
+                title={item.title}
+                subtitle={item.category_name}
+                onOpen={() => openEventPage(item.id)}
+              />
             ))}
             {favoriteEvents.length === 0 && <p className="text-sm text-slate-500">Избранное пусто.</p>}
           </section>
@@ -605,24 +854,35 @@ export default function App() {
           />
         )}
 
-        {(page === PAGES.FEED || !token) && token && (
+        {page === PAGES.CREATE_EVENT && token && (
           <EventFormSection
             editingEventId={editingEventId}
             eventForm={eventForm}
             setEventForm={setEventForm}
             meta={meta}
-            geocodeCandidates={geocodeCandidates}
+            fieldErrors={eventFieldErrors}
             eventSubmitError={eventSubmitError}
             eventSubmitMessage={eventSubmitMessage}
+            organizerPreview={organizerPreview}
+            userRole={user?.role}
+            onEditProfile={() => navigate(PAGES.PROFILE)}
+            onBack={() => navigate(PAGES.FEED)}
             onSubmit={submitEvent}
             onReset={resetEventForm}
-            onGeocode={geocodeCurrentAddress}
-            onApplyCandidate={applyGeocodeCandidate}
             onImageFileChange={handleImageFileChange}
           />
         )}
 
-        {(page === PAGES.FEED || !token) && (
+        {page === PAGES.CREATE_EVENT && !token && (
+          <p className="rounded-lg bg-white p-4 text-sm text-slate-600 shadow">
+            Войдите в аккаунт, чтобы создавать мероприятия.{" "}
+            <button type="button" className="text-indigo-600 underline" onClick={() => navigate(PAGES.LOGIN)}>
+              Войти
+            </button>
+          </p>
+        )}
+
+        {page === PAGES.FEED && (
           <FeedSection
             filters={filters}
             setFilters={setFilters}
@@ -638,13 +898,13 @@ export default function App() {
             token={token}
             user={user}
             myEventIds={myEventIds}
-            attendingIds={attendingIds}
-            eventForm={eventForm}
-            setEventForm={setEventForm}
+            registrationStatusMap={registrationStatusMap}
             onToggleFavorite={toggleFavorite}
-            onToggleAttend={toggleAttend}
+            onAttendAction={handleAttendAction}
             onOpenEvent={openEventPage}
             onDeleteEvent={onDeleteEvent}
+            onReportEvent={openReportModal}
+            onOpenUser={openUserProfile}
           />
         )}
       </main>
