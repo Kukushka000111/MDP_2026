@@ -190,3 +190,29 @@ CREATE INDEX IF NOT EXISTS idx_reviews_event
 
 CREATE INDEX IF NOT EXISTS idx_event_registrations_event
   ON event_registrations (event_id);
+
+-- Category catalog refresh (safe on existing databases)
+UPDATE categories SET name = 'Кино & Театр' WHERE name = 'Кино';
+UPDATE categories SET name = 'Концерты & Вечеринки' WHERE name = 'Концерты';
+UPDATE categories SET name = 'Спорт & Активный отдых' WHERE name = 'Спорт';
+UPDATE categories SET name = 'Лекции & Воркшопы' WHERE name = 'Лекции';
+
+UPDATE events e
+SET category_id = lec.id
+FROM categories lec, categories mc
+WHERE lec.name = 'Лекции & Воркшопы'
+  AND mc.name = 'Мастер-классы'
+  AND e.category_id = mc.id;
+
+DELETE FROM categories WHERE name = 'Мастер-классы';
+
+INSERT INTO categories (name)
+VALUES
+  ('Кино & Театр'),
+  ('Концерты & Вечеринки'),
+  ('Лекции & Воркшопы'),
+  ('Спорт & Активный отдых'),
+  ('Выставки & Арт'),
+  ('Квизы & Настолки'),
+  ('Ламповые тусовки')
+ON CONFLICT (name) DO NOTHING;

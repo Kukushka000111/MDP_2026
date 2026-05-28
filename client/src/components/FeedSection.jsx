@@ -166,7 +166,7 @@ export default function FeedSection({
           )}
         </div>
 
-        <div className="card-surface overflow-hidden lg:col-span-3">
+        <div className="card-surface relative z-0 overflow-hidden lg:col-span-3">
           <MapContainer center={[54.9885, 73.3242]} zoom={12} style={{ height: "70vh", width: "100%" }}>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

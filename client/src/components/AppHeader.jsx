@@ -1,14 +1,7 @@
 import { PAGES } from "../constants";
 import NotificationBell from "./NotificationBell";
 
-function NavButton({ active, children, onClick, primary }) {
-  if (primary) {
-    return (
-      <button type="button" className="btn-primary px-5 py-2 text-xs sm:text-sm" onClick={onClick}>
-        {children}
-      </button>
-    );
-  }
+function NavButton({ active, children, onClick }) {
   return (
     <button
       type="button"
@@ -22,7 +15,7 @@ function NavButton({ active, children, onClick, primary }) {
 
 export default function AppHeader({ token, userRole, page, onNavigate, onLogout, showToast }) {
   return (
-    <header className="border-b border-slate-100 bg-white">
+    <header className="relative z-[1000] border-b border-slate-100 bg-white">
       <div className="mx-auto max-w-7xl px-4 py-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <button type="button" className="text-left" onClick={() => onNavigate(PAGES.FEED)}>
@@ -45,7 +38,7 @@ export default function AppHeader({ token, userRole, page, onNavigate, onLogout,
                 <NavButton active={page === PAGES.FEED} onClick={() => onNavigate(PAGES.FEED)}>
                   Лента
                 </NavButton>
-                <NavButton primary onClick={() => onNavigate(PAGES.CREATE_EVENT)}>
+                <NavButton active={page === PAGES.CREATE_EVENT} onClick={() => onNavigate(PAGES.CREATE_EVENT)}>
                   Создать
                 </NavButton>
                 <NavButton

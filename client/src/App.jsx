@@ -25,6 +25,7 @@ import {
   leaveEvent,
   moderateEvent,
   removeServerFavorite,
+  removeEventParticipant,
   reviewEventRegistration,
   updateEvent,
   upsertReview
@@ -467,6 +468,22 @@ export default function App() {
     }
   }
 
+  async function handleKickParticipant(eventId, userId, displayName) {
+    if (!token) return;
+    const label = displayName || "участника";
+    if (!window.confirm(`Исключить ${label} с мероприятия?`)) return;
+    try {
+      await removeEventParticipant(token, eventId, userId);
+      const items = await getParticipants(token, eventId);
+      setParticipantsByEvent((prev) => ({ ...prev, [eventId]: items }));
+      setMyEvents(await getMyCreatedEvents(token));
+      await loadEvents(eventsPage);
+      showToast("Участник исключён", "success");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  }
+
   function handleProfileUpdated(item) {
     setMyProfile(item);
     if (viewedProfile?.id === item.id) {
@@ -818,6 +835,7 @@ export default function App() {
             participantsByEvent={participantsByEvent}
             onShowParticipants={showParticipants}
             onReviewRegistration={handleReviewRegistration}
+            onKickParticipant={handleKickParticipant}
             onEdit={startEditEvent}
             onOpen={openEventPage}
             onDelete={onDeleteEvent}

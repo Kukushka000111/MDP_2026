@@ -240,6 +240,53 @@ router.get("/:eventId/participants", requireAuth, async (req, res, next) => {
   }
 });
 
+router.delete("/:eventId/registrations/:userId", requireAuth, async (req, res, next) => {
+  try {
+    const { eventId, userId } = req.params;
+
+    const eventResult = await pool.query(
+      "SELECT id, title, created_by FROM events WHERE id = $1",
+      [eventId]
+    );
+    if (eventResult.rowCount === 0) {
+      throw new HttpError(404, "Мероприятие не найдено");
+    }
+    const event = eventResult.rows[0];
+    const isAllowed = req.user.role === "ADMIN" || event.created_by === req.user.sub;
+    if (!isAllowed) {
+      throw new HttpError(403, "Только организатор может исключать участников");
+    }
+    if (String(userId) === String(req.user.sub)) {
+      throw new HttpError(400, "Нельзя исключить себя");
+    }
+
+    const regResult = await pool.query(
+      "SELECT status FROM event_registrations WHERE user_id = $1 AND event_id = $2",
+      [userId, eventId]
+    );
+    if (regResult.rowCount === 0) {
+      throw new HttpError(404, "Участник не найден");
+    }
+
+    await pool.query(
+      "DELETE FROM event_registrations WHERE user_id = $1 AND event_id = $2",
+      [userId, eventId]
+    );
+
+    await createNotification({
+      userId,
+      type: "REGISTRATION_REMOVED",
+      title: "Исключение с мероприятия",
+      body: `Организатор исключил вас из «${event.title}».`,
+      eventId
+    });
+
+    return res.status(204).send();
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.patch(
   "/:eventId/registrations/:userId",
   requireAuth,

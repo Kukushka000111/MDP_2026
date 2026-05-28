@@ -329,6 +329,14 @@ export async function getParticipants(token, eventId) {
   return data.items || [];
 }
 
+export async function removeEventParticipant(token, eventId, userId) {
+  const response = await fetch(`${API_BASE}/events/${eventId}/registrations/${userId}`, {
+    method: "DELETE",
+    headers: authHeaders(token)
+  });
+  if (!response.ok) throw new Error(await parseApiError(response, "Не удалось исключить участника"));
+}
+
 export async function reviewEventRegistration(token, eventId, userId, status) {
   const response = await fetch(`${API_BASE}/events/${eventId}/registrations/${userId}`, {
     method: "PATCH",

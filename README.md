@@ -22,7 +22,19 @@
 - Запись на мероприятие с **лимитом мест** («осталось N мест»), отзывы после окончания (только для записавшихся)
 - Редактирование профиля: имя, телефон, аватар (URL)
 
-## Запуск
+## Запуск в Docker (рекомендуется для демо)
+
+Нужен только Docker Desktop. В корне репозитория:
+
+```bash
+docker compose up --build
+```
+
+Сайт: http://localhost:8080 · Подробнее: [`docs/DOCKER.md`](docs/DOCKER.md)
+
+Опционально: скопировать `.env.docker.example` → `.env` и задать `JWT_SECRET`, `ADMIN_EMAILS`.
+
+## Запуск без Docker (разработка)
 
 1. Node.js LTS и PostgreSQL, база `cultural_navigator`.
 2. Скопировать `server/.env.example` → `server/.env`, заполнить `DATABASE_URL`, `JWT_SECRET`, `ADMIN_EMAILS`.
@@ -45,6 +57,7 @@ npm --workspace server run db:seed
 
 - `docs/backend-stage1.md` — описание API
 - `docs/DEMO_DEFENSE.md` — сценарий показа на защите
+- `docs/DOCKER.md` — Docker Compose (демо, защита)
 - `docs/HANDOFF_NEXT_AGENT.md` — полный контекст для разработки
 - `PROJECT_HANDOFF.md` — обзор архитектуры
 

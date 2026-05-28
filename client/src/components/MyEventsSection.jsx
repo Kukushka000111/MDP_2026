@@ -23,7 +23,7 @@ function ModerationInlineNote({ item }) {
   );
 }
 
-function ParticipantRow({ person, onReview, onOpenUser }) {
+function ParticipantRow({ person, onReview, onKick, onOpenUser }) {
   return (
     <li className="rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-sm">
       <div className="flex flex-wrap items-start gap-3">
@@ -60,24 +60,37 @@ function ParticipantRow({ person, onReview, onOpenUser }) {
           )}
         </div>
       </div>
-      {person.status === "PENDING" && onReview && (
-        <div className="mt-2 flex gap-2">
-          <button
-            type="button"
-            className="status-positive px-3 py-1.5 text-xs font-semibold hover:bg-emerald-100"
-            onClick={() => onReview(person.id, "APPROVED")}
-          >
-            Одобрить
-          </button>
-          <button
-            type="button"
-            className="rounded-2xl bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
-            onClick={() => onReview(person.id, "REJECTED")}
-          >
-            Отклонить
-          </button>
+      {(person.status === "PENDING" && onReview) || (person.status === "APPROVED" && onKick) ? (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {person.status === "PENDING" && onReview && (
+            <>
+              <button
+                type="button"
+                className="status-positive px-3 py-1.5 text-xs font-semibold hover:bg-emerald-100"
+                onClick={() => onReview(person.id, "APPROVED")}
+              >
+                Одобрить
+              </button>
+              <button
+                type="button"
+                className="rounded-2xl bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                onClick={() => onReview(person.id, "REJECTED")}
+              >
+                Отклонить
+              </button>
+            </>
+          )}
+          {person.status === "APPROVED" && onKick && (
+            <button
+              type="button"
+              className="rounded-2xl bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+              onClick={() => onKick(person.id, person.display_name || person.login)}
+            >
+              Исключить
+            </button>
+          )}
         </div>
-      )}
+      ) : null}
     </li>
   );
 }
@@ -87,6 +100,7 @@ export default function MyEventsSection({
   participantsByEvent,
   onShowParticipants,
   onReviewRegistration,
+  onKickParticipant,
   onEdit,
   onOpen,
   onDelete,
@@ -180,16 +194,21 @@ export default function MyEventsSection({
             {participants.length > 0 && (
               <ul className="mt-4 space-y-2 border-t border-slate-100 pt-4" onClick={(event) => event.stopPropagation()}>
                 {participants.map((person) => (
-                  <ParticipantRow
-                    key={person.id}
-                    person={person}
-                    onReview={
-                      onReviewRegistration
-                        ? (userId, status) => onReviewRegistration(item.id, userId, status)
-                        : null
-                    }
-                    onOpenUser={onOpenUser}
-                  />
+                    <ParticipantRow
+                      key={person.id}
+                      person={person}
+                      onReview={
+                        onReviewRegistration
+                          ? (userId, status) => onReviewRegistration(item.id, userId, status)
+                          : null
+                      }
+                      onKick={
+                        onKickParticipant
+                          ? (userId, name) => onKickParticipant(item.id, userId, name)
+                          : null
+                      }
+                      onOpenUser={onOpenUser}
+                    />
                 ))}
               </ul>
             )}

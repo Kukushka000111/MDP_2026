@@ -64,6 +64,7 @@ export default function MyActivitySection({
   participantsByEvent,
   onShowParticipants,
   onReviewRegistration,
+  onKickParticipant,
   onEdit,
   onOpen,
   onDelete,
@@ -102,6 +103,7 @@ export default function MyActivitySection({
           participantsByEvent={participantsByEvent}
           onShowParticipants={onShowParticipants}
           onReviewRegistration={onReviewRegistration}
+          onKickParticipant={onKickParticipant}
           onEdit={onEdit}
           onOpen={onOpen}
           onDelete={onDelete}

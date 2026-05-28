@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+client/dist
+.git
+.gitignore
+*.log
+.env
+server/.env
+client/.env
+.cursor
+agent-transcripts
+mcps
+**/.DS_Store
