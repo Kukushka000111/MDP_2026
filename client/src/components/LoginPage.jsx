@@ -41,8 +41,8 @@ export default function LoginPage({ onSuccess, onNavigate, showToast }) {
     `w-full rounded border px-3 py-2 text-slate-900 ${fieldErrorClass(Boolean(errors[field]))}`;
 
   return (
-    <section className="mx-auto mb-6 max-w-md rounded-lg bg-white p-6 shadow">
-      <h2 className="mb-4 text-xl font-semibold">Вход</h2>
+    <section className="card-surface mx-auto mb-6 max-w-md p-8">
+      <h2 className="mb-4 text-2xl font-black text-[#054752]">Вход</h2>
       <p className="mb-4 text-sm text-slate-500">
         Авторизация по логину и паролю. Сессия — JWT-токен (1 день).
       </p>
@@ -71,7 +71,7 @@ export default function LoginPage({ onSuccess, onNavigate, showToast }) {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded bg-blue-600 py-2 text-white disabled:opacity-50"
+          className="btn-primary w-full disabled:opacity-50"
         >
           {submitting ? "Вход..." : "Войти"}
         </button>
@@ -79,7 +79,7 @@ export default function LoginPage({ onSuccess, onNavigate, showToast }) {
 
       <p className="mt-4 text-center text-sm text-slate-600">
         Нет аккаунта?{" "}
-        <button type="button" className="text-blue-600 underline" onClick={() => onNavigate(PAGES.REGISTER)}>
+        <button type="button" className="font-semibold text-[#00AFF5] underline" onClick={() => onNavigate(PAGES.REGISTER)}>
           Регистрация
         </button>
       </p>

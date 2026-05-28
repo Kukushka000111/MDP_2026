@@ -77,11 +77,11 @@ export default function ProfileEditSection({ profile, token, onUpdated, onCancel
     `w-full rounded border px-3 py-2 ${fieldErrorClass(Boolean(errors[field]))}`;
 
   return (
-    <section className="mb-4 rounded-lg bg-white p-4 shadow">
+    <section className="card-surface mx-auto max-w-2xl p-6 sm:p-8">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold">Редактирование профиля</h2>
+        <h2 className="text-2xl font-black text-[#054752]">Редактирование профиля</h2>
         {onCancel && (
-          <button type="button" className="rounded bg-slate-100 px-3 py-1 text-sm" onClick={onCancel}>
+          <button type="button" className="btn-secondary px-4 py-2 text-sm" onClick={onCancel}>
             Отмена
           </button>
         )}
@@ -123,7 +123,7 @@ export default function ProfileEditSection({ profile, token, onUpdated, onCancel
           <textarea className="w-full rounded border border-slate-300 px-3 py-2" rows={3} value={form.bio} onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))} />
         </div>
         <div className="sm:col-span-2">
-          <button type="submit" disabled={saving} className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50">
+          <button type="submit" disabled={saving} className="btn-primary disabled:opacity-50">
             {saving ? "Сохранение..." : "Сохранить"}
           </button>
         </div>

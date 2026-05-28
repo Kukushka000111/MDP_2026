@@ -39,13 +39,13 @@ export default function ReportEventModal({ open, eventTitle, onClose, onSubmit }
             autoFocus
           />
           <div className="flex justify-end gap-2">
-            <button type="button" className="rounded-lg bg-slate-100 px-4 py-2 text-sm" onClick={onClose}>
+            <button type="button" className="btn-secondary px-5 py-2.5 text-sm" onClick={onClose}>
               Отмена
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-lg bg-amber-600 px-4 py-2 text-sm text-white disabled:opacity-50"
+              className="btn-primary px-5 py-2.5 text-sm disabled:opacity-50"
             >
               {submitting ? "Отправка…" : "Отправить жалобу"}
             </button>

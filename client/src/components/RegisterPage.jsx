@@ -122,8 +122,8 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
   const canSubmit = !checking.email && !checking.login && !submitting;
 
   return (
-    <section className="mx-auto mb-6 max-w-xl rounded-lg bg-white p-6 shadow">
-      <h2 className="mb-1 text-xl font-semibold">Регистрация</h2>
+    <section className="card-surface mx-auto mb-6 max-w-xl p-8">
+      <h2 className="mb-1 text-2xl font-black text-[#054752]">Регистрация</h2>
       <p className="mb-4 text-sm text-slate-500">
         После регистрации заполните контакты в профиле — они подставятся при создании мероприятий.
       </p>
@@ -281,7 +281,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
         <button
           type="submit"
           disabled={!canSubmit}
-          className="w-full rounded bg-blue-600 py-2 text-white disabled:opacity-50"
+          className="btn-primary w-full disabled:opacity-50"
         >
           {submitting ? "Регистрация..." : "Зарегистрироваться"}
         </button>
@@ -289,7 +289,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
 
       <p className="mt-4 text-center text-sm text-slate-600">
         Уже есть аккаунт?{" "}
-        <button type="button" className="text-blue-600 underline" onClick={() => onNavigate(PAGES.LOGIN)}>
+        <button type="button" className="font-semibold text-[#00AFF5] underline" onClick={() => onNavigate(PAGES.LOGIN)}>
           Войти
         </button>
       </p>

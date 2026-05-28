@@ -12,7 +12,7 @@ export default function OrganizerContacts({ event }) {
       {links.map((link) => (
         <li key={`${link.kind}-${link.label}`}>
           {link.href ? (
-            <a href={link.href} target="_blank" rel="noreferrer" className="text-blue-600 underline hover:text-blue-800">
+            <a href={link.href} target="_blank" rel="noreferrer" className="font-medium text-[#00AFF5] underline hover:text-[#0098d4]">
               {link.label}
             </a>
           ) : (

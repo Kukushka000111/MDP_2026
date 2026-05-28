@@ -712,22 +712,27 @@ export default function App() {
       <AppHeader
         token={token}
         userRole={user?.role}
+        page={page}
         onNavigate={navigate}
         onLogout={logout}
         showToast={showToast}
       />
 
-      <main className="mx-auto max-w-7xl px-4 py-4">
+      <main className="mx-auto max-w-7xl px-4 py-6">
         {(apiOffline || metaError) && (
           <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             Сервер API недоступен. Запустите бэкенд: <code className="rounded bg-amber-100 px-1">npm run dev:server</code>
           </div>
         )}
-        <section className="mb-3 text-xs text-slate-500">
-          <span className="rounded bg-slate-100 px-2 py-1">Главная</span>
-          {page !== PAGES.FEED && <span> / </span>}
-          {page !== PAGES.FEED && <span className="rounded bg-slate-100 px-2 py-1">{PAGE_TITLES[page] || page}</span>}
-        </section>
+        {page !== PAGES.FEED && (
+          <section className="mb-4 text-sm font-medium text-slate-500">
+            <button type="button" className="text-[#00AFF5] hover:underline" onClick={() => navigate(PAGES.FEED)}>
+              Главная
+            </button>
+            <span className="mx-2">/</span>
+            <span className="font-semibold text-[#054752]">{PAGE_TITLES[page] || page}</span>
+          </section>
+        )}
 
         {page === PAGES.REGISTER && !token && (
           <RegisterPage onSuccess={handleAuthSuccess} onNavigate={navigate} showToast={showToast} />

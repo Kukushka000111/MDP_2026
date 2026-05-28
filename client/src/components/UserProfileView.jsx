@@ -3,6 +3,15 @@ import { organizerEventsLabel, platformTenureLabel } from "../utils";
 
 const GENDER_LABELS = { MALE: "Мужской", FEMALE: "Женский" };
 
+function ProfileRow({ label, children }) {
+  return (
+    <div className="border-b border-slate-100 py-4">
+      <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</p>
+      <div className="mt-1 text-lg font-semibold text-[#054752]">{children}</div>
+    </div>
+  );
+}
+
 export default function UserProfileView({
   profile,
   isOwn,
@@ -30,74 +39,67 @@ export default function UserProfileView({
   };
 
   return (
-    <section className="mb-4 rounded-lg bg-white p-6 shadow">
+    <section className="mx-auto max-w-2xl">
       {onBack && (
-        <button type="button" className="mb-4 rounded bg-slate-100 px-3 py-1 text-sm" onClick={onBack}>
-          Назад
+        <button type="button" className="btn-ghost mb-4" onClick={onBack}>
+          ← Назад
         </button>
       )}
 
-      <div className="flex flex-wrap items-start gap-4">
-        {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt="" className="h-28 w-28 rounded-full border object-cover" />
-        ) : (
-          <div className="flex h-28 w-28 items-center justify-center rounded-full bg-indigo-100 text-4xl font-semibold text-indigo-700">
-            {(name || "?").charAt(0).toUpperCase()}
-          </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <h2 className="text-xl font-semibold">{name}</h2>
-          <p className="text-sm text-slate-500">@{profile.login}</p>
-          <p className="mt-1 text-sm text-slate-600">{platformTenureLabel(profile.created_at)}</p>
-          <p className="text-sm text-indigo-700">{organizerEventsLabel(profile.events_organized_count)}</p>
-          {verified && (
-            <p className="mt-1 text-sm font-medium text-emerald-700">✓ Подтверждённый организатор</p>
-          )}
-        </div>
-      </div>
+      <h2 className="mb-6 text-3xl font-black tracking-tight text-[#054752]">
+        {isOwn ? "Мой профиль" : name}
+      </h2>
 
-      <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
-        {profile.email && (
+      <div className="card-surface p-6 sm:p-8">
+        <div className="mb-8 flex items-center gap-5 border-b border-slate-100 pb-6">
+          {profile.avatar_url ? (
+            <img src={profile.avatar_url} alt="" className="h-24 w-24 rounded-full object-cover ring-4 ring-[#00AFF5]/20" />
+          ) : (
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#00AFF5]/15 text-3xl font-black text-[#054752]">
+              {(name || "?").charAt(0).toUpperCase()}
+            </div>
+          )}
           <div>
-            <dt className="text-slate-500">Email</dt>
-            <dd>{profile.email}</dd>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-2xl font-bold text-[#054752]">{name}</p>
+              {verified && (
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">
+                  ✓
+                </span>
+              )}
+            </div>
+            <p className="text-sm font-medium text-slate-500">@{profile.login}</p>
+            <p className="mt-1 text-sm text-[#00AFF5]">{organizerEventsLabel(profile.events_organized_count)}</p>
+            <p className="text-sm text-slate-500">{platformTenureLabel(profile.created_at)}</p>
           </div>
-        )}
+        </div>
+
+        {profile.email && <ProfileRow label="Email">{profile.email}</ProfileRow>}
         {profile.gender && (
-          <div>
-            <dt className="text-slate-500">Пол</dt>
-            <dd>{GENDER_LABELS[profile.gender] || profile.gender}</dd>
-          </div>
+          <ProfileRow label="Пол">{GENDER_LABELS[profile.gender] || profile.gender}</ProfileRow>
         )}
         {profile.role && (
-          <div>
-            <dt className="text-slate-500">Роль</dt>
-            <dd>{profile.role === "ADMIN" ? "Модератор" : "Участник"}</dd>
+          <ProfileRow label="Роль">{profile.role === "ADMIN" ? "Модератор" : "Участник"}</ProfileRow>
+        )}
+
+        {profile.bio && (
+          <div className="border-b border-slate-100 py-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">О себе</p>
+            <p className="mt-2 text-base leading-relaxed text-[#054752] whitespace-pre-wrap">{profile.bio}</p>
           </div>
         )}
-      </dl>
 
-      {profile.bio && (
-        <div className="mt-4">
-          <h3 className="mb-1 text-sm font-medium text-slate-700">О себе</h3>
-          <p className="text-sm text-slate-600 whitespace-pre-wrap">{profile.bio}</p>
+        <div className="pt-4">
+          <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">Контакты</p>
+          <OrganizerContacts event={contactEvent} />
         </div>
-      )}
 
-      <div className="mt-4">
-        <h3 className="mb-2 text-sm font-medium text-slate-700">Контакты</h3>
-        <OrganizerContacts event={contactEvent} />
+        {isOwn && onEdit && (
+          <button type="button" className="btn-primary mt-8 w-full sm:w-auto" onClick={onEdit}>
+            Редактировать профиль
+          </button>
+        )}
       </div>
-
-      {isOwn && onEdit && (
-        <button
-          type="button"
-          className="mt-6 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white"
-          onClick={onEdit}
-        >
-          Редактировать профиль
-        </button>
-      )}
     </section>
   );
 }

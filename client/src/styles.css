@@ -2,17 +2,76 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body,
-#root {
-  height: 100%;
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f5f5f5;
+    color: #054752;
+  }
 }
 
-body {
-  margin: 0;
-  font-family: Inter, system-ui, Arial, sans-serif;
-  background: #f8fafc;
-  color: #0f172a;
+@layer components {
+  .brand-text {
+    @apply text-[#054752];
+  }
+
+  .btn-primary {
+    @apply rounded-full px-6 py-3 text-sm font-bold text-white transition-all;
+    @apply bg-[#00AFF5] hover:bg-[#0098d4] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply rounded-full px-6 py-3 text-sm font-bold transition-all;
+    @apply border border-[#00AFF5] bg-transparent text-[#00AFF5] hover:bg-[#00AFF5]/5;
+  }
+
+  .btn-ghost {
+    @apply rounded-full px-4 py-2 text-sm font-semibold text-[#054752] transition-all hover:bg-[#054752]/5;
+  }
+
+  .btn-danger {
+    @apply rounded-full px-5 py-2.5 text-sm font-bold text-white transition-all;
+    @apply bg-rose-500 hover:bg-rose-600 hover:shadow-md;
+  }
+
+  .btn-nav {
+    @apply rounded-full px-4 py-2 text-sm font-semibold text-[#054752] transition-all hover:bg-[#054752]/5;
+  }
+
+  .btn-nav-active {
+    @apply rounded-full bg-[#00AFF5] px-4 py-2 text-sm font-bold text-white shadow-sm;
+  }
+
+  .card-surface {
+    @apply rounded-3xl border border-slate-100 bg-white shadow-sm;
+  }
+
+  .filter-shell {
+    @apply flex flex-col gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-lg lg:flex-row lg:items-stretch lg:divide-x lg:divide-slate-200;
+  }
+
+  .filter-field {
+    @apply flex min-w-0 flex-1 flex-col justify-center px-4 py-2;
+  }
+
+  .filter-label {
+    @apply text-[10px] font-bold uppercase tracking-wider text-slate-400;
+  }
+
+  .filter-input {
+    @apply w-full border-none bg-transparent p-0 text-sm font-medium text-[#054752] placeholder:text-slate-400 focus:outline-none focus:ring-0;
+  }
+
+  .filter-select {
+    @apply w-full cursor-pointer border-none bg-transparent p-0 text-sm font-medium text-[#054752] focus:outline-none focus:ring-0;
+  }
 }
 
 /* Leaflet panes default to ~400; keep maps under modals */

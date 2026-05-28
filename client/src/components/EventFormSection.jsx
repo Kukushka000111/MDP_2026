@@ -35,15 +35,15 @@ export default function EventFormSection({
     Number.isFinite(Number(eventForm.latitude)) && Number.isFinite(Number(eventForm.longitude));
 
   return (
-    <section className="mx-auto max-w-6xl rounded-xl bg-white p-6 shadow-lg">
+    <section className="card-surface mx-auto max-w-6xl p-6 sm:p-8">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div className="min-w-0">
           {onBack && (
-            <button type="button" className="mb-2 rounded bg-slate-100 px-3 py-1 text-sm" onClick={onBack}>
+            <button type="button" className="btn-ghost mb-2" onClick={onBack}>
               ← Назад к ленте
             </button>
           )}
-          <h2 className="text-xl font-semibold text-slate-900">
+          <h2 className="text-2xl font-black text-[#054752]">
             {editingEventId ? "Редактировать мероприятие" : "Создать мероприятие"}
           </h2>
           <p className="mt-1 text-sm text-slate-500">
@@ -212,14 +212,11 @@ export default function EventFormSection({
           {eventSubmitMessage && <p className="text-sm text-emerald-700">{eventSubmitMessage}</p>}
 
           <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-4">
-            <button
-              type="submit"
-              className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
-            >
+          <button type="submit" className="btn-primary">
               {editingEventId ? "Сохранить изменения" : "Отправить на модерацию"}
             </button>
             {!editingEventId && (
-              <button type="button" className="rounded-lg bg-slate-100 px-4 py-2.5 text-sm" onClick={onReset}>
+              <button type="button" className="btn-secondary" onClick={onReset}>
                 Очистить форму
               </button>
             )}
