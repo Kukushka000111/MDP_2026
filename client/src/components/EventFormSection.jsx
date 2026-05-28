@@ -29,7 +29,7 @@ export default function EventFormSection({
   userRole
 }) {
   const inputClass = (field) =>
-    `w-full rounded-lg border px-3 py-2 text-sm ${fieldErrorClass(Boolean(fieldErrors[field]))}`;
+    `input-field text-sm ${fieldErrorClass(Boolean(fieldErrors[field]))}`;
 
   const hasMarker =
     Number.isFinite(Number(eventForm.latitude)) && Number.isFinite(Number(eventForm.longitude));
@@ -43,7 +43,7 @@ export default function EventFormSection({
               ← Назад к ленте
             </button>
           )}
-          <h2 className="text-2xl font-black text-[#054752]">
+          <h2 className="section-heading text-2xl">
             {editingEventId ? "Редактировать мероприятие" : "Создать мероприятие"}
           </h2>
           <p className="mt-1 text-sm text-slate-500">
@@ -51,13 +51,13 @@ export default function EventFormSection({
           </p>
         </div>
         {editingEventId && (
-          <button type="button" className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm" onClick={onReset}>
+          <button type="button" className="rounded-2xl bg-slate-100 px-3 py-1.5 text-sm" onClick={onReset}>
             Отменить редактирование
           </button>
         )}
       </div>
 
-      <div className="mb-6 rounded-lg border border-indigo-100 bg-indigo-50/50 p-4 text-sm">
+      <div className="mb-6 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4 text-sm">
         <p className="mb-2 font-medium text-slate-800">Контакты организатора (из профиля)</p>
         {organizerPreview?.name ? (
           <ul className="space-y-0.5 text-slate-600">
@@ -150,7 +150,7 @@ export default function EventFormSection({
             <p className="text-xs text-slate-400">Формат: город, улица, дом</p>
           </FormField>
 
-          <fieldset className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <fieldset className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <legend className="px-1 text-sm font-medium text-slate-800">
               Вы хотите сделать свой адрес публичным?
             </legend>
@@ -187,11 +187,11 @@ export default function EventFormSection({
             />
           </FormField>
 
-          <div className="rounded-lg border border-dashed border-slate-200 p-4">
+          <div className="rounded-2xl border border-dashed border-slate-200 p-4">
             <p className="mb-2 text-sm font-medium text-slate-700">Обложка</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <input
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="rounded-2xl border border-slate-300 px-3 py-2 text-sm"
                 placeholder="URL изображения"
                 value={eventForm.imageUrl}
                 onChange={(event) => setEventForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
@@ -199,12 +199,12 @@ export default function EventFormSection({
               <input
                 type="file"
                 accept="image/*"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="rounded-2xl border border-slate-300 px-3 py-2 text-sm"
                 onChange={onImageFileChange}
               />
             </div>
             {eventForm.imageUrl && (
-              <img src={eventForm.imageUrl} alt="Превью" className="mt-3 max-h-48 rounded-lg border object-cover" />
+              <img src={eventForm.imageUrl} alt="Превью" className="mt-3 max-h-48 rounded-2xl border object-cover" />
             )}
           </div>
 
@@ -229,7 +229,7 @@ export default function EventFormSection({
           {fieldErrors.mapMarker && (
             <p className="mb-2 text-xs text-rose-600">{fieldErrors.mapMarker}</p>
           )}
-          <div className="overflow-hidden rounded-lg border">
+          <div className="overflow-hidden rounded-2xl border">
             <MapContainer center={[54.9885, 73.3242]} zoom={12} style={{ height: "420px", width: "100%" }}>
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

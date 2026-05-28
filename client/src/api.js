@@ -164,6 +164,15 @@ export async function getServerFavorites(token) {
   return (data.items || []).map((item) => item.id);
 }
 
+export async function getFavoriteEvents(token) {
+  const response = await fetch(`${API_BASE}/favorites`, {
+    headers: authHeaders(token)
+  });
+  if (!response.ok) throw new Error(await parseApiError(response, "Не удалось загрузить избранное"));
+  const data = await response.json();
+  return data.items || [];
+}
+
 export async function addServerFavorite(token, eventId) {
   const response = await fetch(`${API_BASE}/favorites`, {
     method: "POST",

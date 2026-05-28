@@ -101,7 +101,7 @@ export default function FeedSection({
           </div>
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
-          <p className="font-medium text-[#054752]">
+          <p className="font-medium text-slate-900">
             Найдено: <span className="font-bold">{total}</span>
             {totalPages > 1 && (
               <span className="text-slate-400">
@@ -151,7 +151,7 @@ export default function FeedSection({
               >
                 ← Назад
               </button>
-              <span className="text-sm font-semibold text-[#054752]">
+              <span className="text-sm font-semibold text-slate-900">
                 {page} / {totalPages}
               </span>
               <button
@@ -175,13 +175,13 @@ export default function FeedSection({
             {mapEvents.map((event) => (
               <Marker key={event.id} position={[Number(event.latitude), Number(event.longitude)]}>
                 <Popup>
-                  <strong className="text-[#054752]">{event.title}</strong>
+                  <strong className="text-slate-900">{event.title}</strong>
                   <br />
                   <span className="text-xs text-slate-600">{event.address}</span>
                   <br />
                   <button
                     type="button"
-                    className="mt-2 text-xs font-bold text-[#00AFF5] underline"
+                    className="mt-2 text-xs font-bold text-indigo-600 underline"
                     onClick={() => onOpenEvent(event.id)}
                   >
                     Открыть

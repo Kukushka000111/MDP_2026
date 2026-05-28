@@ -114,7 +114,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
   }
 
   const inputCls = (field) =>
-    `w-full rounded border px-3 py-2 text-slate-900 ${fieldErrorClass(Boolean(errors[field]))}`;
+    `input-field ${fieldErrorClass(Boolean(errors[field]))}`;
 
   const loginFormatHint = form.login.trim() ? validateLogin(form.login) : "";
   const loginTaken = availability.login === false;
@@ -123,7 +123,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
 
   return (
     <section className="card-surface mx-auto mb-6 max-w-xl p-8">
-      <h2 className="mb-1 text-2xl font-black text-[#054752]">Регистрация</h2>
+      <h2 className="section-heading mb-1 text-2xl">Регистрация</h2>
       <p className="mb-4 text-sm text-slate-500">
         После регистрации заполните контакты в профиле — они подставятся при создании мероприятий.
       </p>
@@ -171,7 +171,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
           }
         >
           <input
-            className={`w-full rounded border px-3 py-2 text-slate-900 ${
+            className={`input-field ${
               errors.login || loginFormatHint || loginTaken
                 ? "border-rose-500 ring-1 ring-rose-300"
                 : loginFree
@@ -265,9 +265,9 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
 
         <Field label="Проверка (капча) *" error={errors.captchaAnswer}>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded bg-slate-100 px-3 py-2 text-sm font-medium">{captcha.question || "..."}</span>
+            <span className="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium">{captcha.question || "..."}</span>
             <input
-              className={`w-24 rounded border px-3 py-2 ${fieldErrorClass(Boolean(errors.captchaAnswer))}`}
+              className={`input-field w-24 ${fieldErrorClass(Boolean(errors.captchaAnswer))}`}
               inputMode="numeric"
               value={form.captchaAnswer}
               onChange={(e) => setForm((p) => ({ ...p, captchaAnswer: e.target.value }))}
@@ -289,7 +289,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
 
       <p className="mt-4 text-center text-sm text-slate-600">
         Уже есть аккаунт?{" "}
-        <button type="button" className="font-semibold text-[#00AFF5] underline" onClick={() => onNavigate(PAGES.LOGIN)}>
+        <button type="button" className="font-semibold text-indigo-600 underline hover:text-indigo-700" onClick={() => onNavigate(PAGES.LOGIN)}>
           Войти
         </button>
       </p>

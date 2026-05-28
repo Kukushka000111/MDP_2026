@@ -15,7 +15,7 @@ export default function PasswordInput({
     <div className="relative">
       <input
         type={visible ? "text" : "password"}
-        className={`w-full rounded border px-3 py-2 pr-10 ${fieldErrorClass(hasError)} ${className}`}
+        className={`input-field pr-10 ${fieldErrorClass(hasError)} ${className}`}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
@@ -24,7 +24,7 @@ export default function PasswordInput({
       <button
         type="button"
         tabIndex={-1}
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
         onClick={() => setVisible((prev) => !prev)}
         aria-label={visible ? "Скрыть пароль" : "Показать пароль"}
         title={visible ? "Скрыть пароль" : "Показать пароль"}

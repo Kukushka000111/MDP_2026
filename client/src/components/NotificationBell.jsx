@@ -64,7 +64,7 @@ export default function NotificationBell({ token, showToast }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[90vw] rounded-3xl border border-slate-100 bg-white shadow-xl">
+        <div className="absolute right-0 z-50 mt-2 w-80 max-w-[90vw] rounded-2xl border border-slate-100 bg-white shadow-xl">
           <div className="flex items-center justify-between border-b px-3 py-2">
             <p className="text-sm font-semibold text-slate-800">Уведомления</p>
             {unreadCount > 0 && (

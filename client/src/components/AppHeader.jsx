@@ -26,7 +26,7 @@ export default function AppHeader({ token, userRole, page, onNavigate, onLogout,
       <div className="mx-auto max-w-7xl px-4 py-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <button type="button" className="text-left" onClick={() => onNavigate(PAGES.FEED)}>
-            <h1 className="text-xl font-black tracking-tight text-[#054752] sm:text-2xl">Культурный Навигатор</h1>
+            <h1 className="section-heading text-xl sm:text-2xl">Культурный Навигатор</h1>
             <p className="text-sm font-medium text-slate-500">События рядом с вами</p>
           </button>
 
@@ -48,11 +48,11 @@ export default function AppHeader({ token, userRole, page, onNavigate, onLogout,
                 <NavButton primary onClick={() => onNavigate(PAGES.CREATE_EVENT)}>
                   Создать
                 </NavButton>
-                <NavButton active={page === PAGES.MY_EVENTS} onClick={() => onNavigate(PAGES.MY_EVENTS)}>
-                  Мои
-                </NavButton>
-                <NavButton active={page === PAGES.ATTENDING} onClick={() => onNavigate(PAGES.ATTENDING)}>
-                  Заявки
+                <NavButton
+                  active={page === PAGES.MY_EVENTS || page === PAGES.ATTENDING}
+                  onClick={() => onNavigate(PAGES.ATTENDING)}
+                >
+                  Моё
                 </NavButton>
                 <NavButton active={page === PAGES.FAVORITES} onClick={() => onNavigate(PAGES.FAVORITES)}>
                   ★

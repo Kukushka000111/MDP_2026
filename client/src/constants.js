@@ -26,8 +26,8 @@ export const PAGE_TITLES = {
   profile: "Мой профиль",
   "profile-edit": "Редактирование",
   user: "Профиль",
-  "my-events": "Мои мероприятия",
-  attending: "Мои заявки",
+  "my-events": "Моё",
+  attending: "Моё",
   favorites: "Избранное",
   "create-event": "Создать мероприятие"
 };

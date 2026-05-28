@@ -19,7 +19,7 @@ export function moderationStatusLabel(status) {
 export function moderationStatusClass(status) {
   switch (status) {
     case "APPROVED":
-      return "bg-emerald-100 text-emerald-800";
+      return "rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700";
     case "NEEDS_EDIT":
       return "bg-amber-100 text-amber-800";
     case "REJECTED":
@@ -92,13 +92,39 @@ export function registrationStatusLabel(status) {
 export function registrationStatusClass(status) {
   switch (status) {
     case "APPROVED":
-      return "bg-emerald-100 text-emerald-800";
+      return "rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700";
     case "REJECTED":
-      return "bg-rose-100 text-rose-800";
+      return "rounded-2xl border border-rose-200 bg-rose-50 text-rose-700";
     case "PENDING":
-      return "bg-amber-100 text-amber-800";
+      return "rounded-2xl border border-amber-200 bg-amber-50 text-amber-700";
     default:
-      return "bg-slate-100 text-slate-700";
+      return "rounded-2xl border border-slate-200 bg-slate-50 text-slate-600";
+  }
+}
+
+export function registrationStatusPillClass(status) {
+  switch (status) {
+    case "APPROVED":
+      return "rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "REJECTED":
+      return "rounded-2xl border border-rose-200 bg-rose-50 text-rose-700";
+    case "PENDING":
+      return "rounded-2xl border border-amber-200 bg-amber-50 text-amber-700";
+    default:
+      return "rounded-2xl border border-slate-200 bg-slate-50 text-slate-600";
+  }
+}
+
+export function moderationBadgePastel(status) {
+  switch (status) {
+    case "APPROVED":
+      return "rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "NEEDS_EDIT":
+      return "rounded-2xl border border-orange-200 bg-orange-50 text-orange-700";
+    case "REJECTED":
+      return "rounded-2xl border border-rose-200 bg-rose-50 text-rose-700";
+    default:
+      return "rounded-2xl border border-amber-200 bg-amber-50 text-amber-700";
   }
 }
 

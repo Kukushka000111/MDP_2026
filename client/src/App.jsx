@@ -20,6 +20,7 @@ import {
   getUserProfile,
   getReviews,
   reportEvent,
+  getFavoriteEvents,
   getServerFavorites,
   leaveEvent,
   moderateEvent,
@@ -33,10 +34,10 @@ import ReportEventModal from "./components/ReportEventModal";
 import AttendApplyModal from "./components/AttendApplyModal";
 import EventDetailSection from "./components/EventDetailSection";
 import EventFormSection from "./components/EventFormSection";
-import EventListRow from "./components/EventListRow";
 import FeedSection from "./components/FeedSection";
+import FavoritesSection from "./components/FavoritesSection";
 import ModerationPanel from "./components/ModerationPanel";
-import MyEventsSection from "./components/MyEventsSection";
+import MyActivitySection from "./components/MyActivitySection";
 import LoginPage from "./components/LoginPage";
 import ProfileEditSection from "./components/ProfileEditSection";
 import UserProfileView from "./components/UserProfileView";
@@ -46,8 +47,6 @@ import { FAVORITES_KEY, PAGE_SIZE, PAGE_TITLES, PAGES, TOKEN_KEY } from "./const
 import {
   EMPTY_EVENT_FORM,
   readImageFileAsDataUrl,
-  registrationStatusClass,
-  registrationStatusLabel,
   toDatetimeLocalValue,
   validateEventForm
 } from "./utils";
@@ -98,6 +97,7 @@ export default function App() {
   const [viewedProfile, setViewedProfile] = useState(null);
   const [meta, setMeta] = useState({ categories: [] });
   const [favorites, setFavorites] = useState(parseLocalFavorites);
+  const [favoriteEventsList, setFavoriteEventsList] = useState([]);
   const [token, setToken] = useState(localStorage.getItem(TOKEN_KEY) || "");
   const [user, setUser] = useState(null);
   const [myProfile, setMyProfile] = useState(null);
@@ -182,13 +182,19 @@ export default function App() {
           const profile = await getMyProfile(token);
           if (!cancelled) setMyProfile(profile);
         }
-        if (page === PAGES.ATTENDING) {
-          const attending = await getMyAttendingEvents(token);
-          if (!cancelled) setMyAttending(attending);
+        if (page === PAGES.ATTENDING || page === PAGES.MY_EVENTS) {
+          const [attending, created] = await Promise.all([
+            getMyAttendingEvents(token),
+            getMyCreatedEvents(token)
+          ]);
+          if (!cancelled) {
+            setMyAttending(attending);
+            setMyEvents(created);
+          }
         }
-        if (page === PAGES.MY_EVENTS) {
-          const created = await getMyCreatedEvents(token);
-          if (!cancelled) setMyEvents(created);
+        if (page === PAGES.FAVORITES) {
+          const items = await getFavoriteEvents(token);
+          if (!cancelled) setFavoriteEventsList(items);
         }
       } catch (error) {
         if (!cancelled) showToast(error.message, "error");
@@ -335,10 +341,11 @@ export default function App() {
     return map;
   }, [myAttending]);
 
-  const favoriteEvents = useMemo(
-    () => events.filter((event) => favorites.includes(event.id)),
-    [events, favorites]
-  );
+  useEffect(() => {
+    if (page !== PAGES.FAVORITES || token) return;
+    setFavoriteEventsList(events.filter((event) => favorites.includes(event.id)));
+  }, [page, token, favorites, events]);
+
   const myEventIds = useMemo(() => new Set(myEvents.map((item) => item.id)), [myEvents]);
 
   const organizerPreview = useMemo(() => {
@@ -386,6 +393,9 @@ export default function App() {
       if (isActive) await removeServerFavorite(token, id);
       else await addServerFavorite(token, id);
       setFavorites(await getServerFavorites(token));
+      if (page === PAGES.FAVORITES) {
+        setFavoriteEventsList(await getFavoriteEvents(token));
+      }
       showToast(isActive ? "Убрано из избранного" : "Добавлено в избранное", "success");
     } catch (error) {
       showToast(error.message, "error");
@@ -726,11 +736,11 @@ export default function App() {
         )}
         {page !== PAGES.FEED && (
           <section className="mb-4 text-sm font-medium text-slate-500">
-            <button type="button" className="text-[#00AFF5] hover:underline" onClick={() => navigate(PAGES.FEED)}>
+            <button type="button" className="text-indigo-600 hover:underline" onClick={() => navigate(PAGES.FEED)}>
               Главная
             </button>
             <span className="mx-2">/</span>
-            <span className="font-semibold text-[#054752]">{PAGE_TITLES[page] || page}</span>
+            <span className="font-semibold text-slate-900">{PAGE_TITLES[page] || page}</span>
           </section>
         )}
 
@@ -799,9 +809,12 @@ export default function App() {
           />
         )}
 
-        {page === PAGES.MY_EVENTS && token && (
-          <MyEventsSection
+        {(page === PAGES.MY_EVENTS || page === PAGES.ATTENDING) && token && (
+          <MyActivitySection
+            activeTab={page === PAGES.ATTENDING ? "attending" : "organizing"}
+            onTabChange={(tab) => navigate(tab === "attending" ? PAGES.ATTENDING : PAGES.MY_EVENTS)}
             myEvents={myEvents}
+            myAttending={myAttending}
             participantsByEvent={participantsByEvent}
             onShowParticipants={showParticipants}
             onReviewRegistration={handleReviewRegistration}
@@ -812,39 +825,21 @@ export default function App() {
           />
         )}
 
-        {page === PAGES.ATTENDING && token && (
-          <section className="mb-4 rounded-lg bg-white p-4 shadow">
-            <h2 className="mb-2 text-lg font-semibold">Мои заявки и записи</h2>
-            {myAttending.map((item) => (
-              <EventListRow
-                key={item.id}
-                title={item.title}
-                subtitle={`${new Date(item.starts_at).toLocaleString("ru-RU")}${item.registration_message ? ` · «${item.registration_message}»` : ""}`}
-                badge={
-                  <span className={`rounded px-2 py-0.5 text-xs ${registrationStatusClass(item.registration_status)}`}>
-                    {registrationStatusLabel(item.registration_status)}
-                  </span>
-                }
-                onOpen={() => openEventPage(item.id)}
-              />
-            ))}
-            {myAttending.length === 0 && <p className="text-sm text-slate-500">Список пуст.</p>}
-          </section>
-        )}
-
         {page === PAGES.FAVORITES && (
-          <section className="mb-4 rounded-lg bg-white p-4 shadow">
-            <h2 className="mb-2 text-lg font-semibold">Избранное</h2>
-            {favoriteEvents.map((item) => (
-              <EventListRow
-                key={item.id}
-                title={item.title}
-                subtitle={item.category_name}
-                onOpen={() => openEventPage(item.id)}
-              />
-            ))}
-            {favoriteEvents.length === 0 && <p className="text-sm text-slate-500">Избранное пусто.</p>}
-          </section>
+          <FavoritesSection
+            events={favoriteEventsList}
+            favorites={favorites}
+            registrationStatusMap={registrationStatusMap}
+            token={token}
+            user={user}
+            myEventIds={myEventIds}
+            onOpen={openEventPage}
+            onToggleFavorite={toggleFavorite}
+            onAttendAction={handleAttendAction}
+            onDeleteEvent={onDeleteEvent}
+            onReport={openReportModal}
+            onOpenUser={openUserProfile}
+          />
         )}
 
         {page === PAGES.MODERATION && user?.role === "ADMIN" && (

@@ -7,7 +7,7 @@ function ProfileRow({ label, children }) {
   return (
     <div className="border-b border-slate-100 py-4">
       <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</p>
-      <div className="mt-1 text-lg font-semibold text-[#054752]">{children}</div>
+      <div className="mt-1 text-lg font-semibold text-slate-900">{children}</div>
     </div>
   );
 }
@@ -46,30 +46,30 @@ export default function UserProfileView({
         </button>
       )}
 
-      <h2 className="mb-6 text-3xl font-black tracking-tight text-[#054752]">
+      <h2 className="section-heading mb-6 text-3xl">
         {isOwn ? "Мой профиль" : name}
       </h2>
 
       <div className="card-surface p-6 sm:p-8">
         <div className="mb-8 flex items-center gap-5 border-b border-slate-100 pb-6">
           {profile.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="h-24 w-24 rounded-full object-cover ring-4 ring-[#00AFF5]/20" />
+            <img src={profile.avatar_url} alt="" className="h-24 w-24 rounded-full object-cover ring-4 ring-indigo-100" />
           ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#00AFF5]/15 text-3xl font-black text-[#054752]">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-indigo-50 text-3xl font-black text-slate-900">
               {(name || "?").charAt(0).toUpperCase()}
             </div>
           )}
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-2xl font-bold text-[#054752]">{name}</p>
+              <p className="text-2xl font-bold text-slate-900">{name}</p>
               {verified && (
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">
+                <span className="status-positive inline-flex h-6 w-6 items-center justify-center text-xs font-bold">
                   ✓
                 </span>
               )}
             </div>
             <p className="text-sm font-medium text-slate-500">@{profile.login}</p>
-            <p className="mt-1 text-sm text-[#00AFF5]">{organizerEventsLabel(profile.events_organized_count)}</p>
+            <p className="mt-1 text-sm text-indigo-600">{organizerEventsLabel(profile.events_organized_count)}</p>
             <p className="text-sm text-slate-500">{platformTenureLabel(profile.created_at)}</p>
           </div>
         </div>
@@ -85,7 +85,7 @@ export default function UserProfileView({
         {profile.bio && (
           <div className="border-b border-slate-100 py-4">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-400">О себе</p>
-            <p className="mt-2 text-base leading-relaxed text-[#054752] whitespace-pre-wrap">{profile.bio}</p>
+            <p className="mt-2 whitespace-pre-wrap text-base leading-relaxed text-slate-500">{profile.bio}</p>
           </div>
         )}
 
