@@ -25,7 +25,24 @@ function requireAdmin(req, _res, next) {
   return next();
 }
 
+function optionalAuth(req, _res, next) {
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    req.user = jwt.verify(token, env.jwtSecret);
+  } catch (_error) {
+    // ignore invalid token for optional auth
+  }
+  return next();
+}
+
 module.exports = {
   requireAuth,
-  requireAdmin
+  requireAdmin,
+  optionalAuth
 };

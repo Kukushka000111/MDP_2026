@@ -1,15 +1,16 @@
 const express = require("express");
 const pool = require("../db/pool");
 const validate = require("../middleware/validate");
-const { requireAuth } = require("../middleware/auth");
-const { createEventSchema, listEventsSchema } = require("../schemas/events");
+const { requireAuth, optionalAuth } = require("../middleware/auth");
+const { createEventSchema, updateEventSchema, listEventsSchema } = require("../schemas/events");
 const HttpError = require("../utils/http-error");
 
 const router = express.Router();
 
 router.get("/", validate(listEventsSchema), async (req, res, next) => {
   try {
-    const { q, categoryId, districtId, type, dateFrom, dateTo } = req.validated.query;
+    const { q, categoryId, districtId, type, dateFrom, dateTo, page, limit } = req.validated.query;
+    const offset = (page - 1) * limit;
     const where = ["e.moderation_status = 'APPROVED'"];
     const values = [];
 
@@ -43,6 +44,15 @@ router.get("/", validate(listEventsSchema), async (req, res, next) => {
       where.push(`e.starts_at <= $${values.length}`);
     }
 
+    const countResult = await pool.query(
+      `SELECT COUNT(*)::int AS total
+       FROM events e
+       WHERE ${where.join(" AND ")}`,
+      values
+    );
+    const total = countResult.rows[0]?.total || 0;
+
+    values.push(limit, offset);
     const result = await pool.query(
       `SELECT
           e.id, e.title, e.description, e.address, e.latitude, e.longitude,
@@ -61,11 +71,18 @@ router.get("/", validate(listEventsSchema), async (req, res, next) => {
          GROUP BY event_id
        ) reg ON reg.event_id = e.id
        WHERE ${where.join(" AND ")}
-       ORDER BY e.starts_at ASC`,
+       ORDER BY e.starts_at ASC
+       LIMIT $${values.length - 1} OFFSET $${values.length}`,
       values
     );
 
-    return res.json({ items: result.rows });
+    return res.json({
+      items: result.rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit))
+    });
   } catch (error) {
     return next(error);
   }
@@ -141,14 +158,14 @@ router.get("/:eventId/participants", requireAuth, async (req, res, next) => {
   }
 });
 
-router.get("/:eventId", async (req, res, next) => {
+router.get("/:eventId", optionalAuth, async (req, res, next) => {
   try {
     const { eventId } = req.params;
     const result = await pool.query(
       `SELECT
           e.id, e.title, e.description, e.address, e.latitude, e.longitude, e.image_url,
           e.organizer_name, e.organizer_contact, e.starts_at, e.ends_at,
-          e.event_type, e.moderation_status, e.created_at,
+          e.event_type, e.moderation_status, e.moderation_comment, e.created_by, e.created_at,
           c.id AS category_id, c.name AS category_name,
           d.id AS district_id, d.name AS district_name,
           COALESCE(reg.registrations_count, 0) AS registrations_count
@@ -167,7 +184,9 @@ router.get("/:eventId", async (req, res, next) => {
       throw new HttpError(404, "Event not found");
     }
     const item = result.rows[0];
-    if (item.moderation_status !== "APPROVED") {
+    const isOwner = req.user?.sub === item.created_by;
+    const isAdmin = req.user?.role === "ADMIN";
+    if (item.moderation_status !== "APPROVED" && !isOwner && !isAdmin) {
       throw new HttpError(403, "Event is not public");
     }
     return res.json({ item });
@@ -223,6 +242,86 @@ router.post("/", requireAuth, validate(createEventSchema), async (req, res, next
     );
 
     return res.status(201).json({ item: result.rows[0] });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.patch("/:eventId", requireAuth, validate(updateEventSchema), async (req, res, next) => {
+  try {
+    const { eventId } = req.validated.params;
+    const input = req.validated.body;
+    const startsAt = new Date(input.startsAt);
+    const endsAt = new Date(input.endsAt);
+
+    if (startsAt > endsAt) {
+      throw new HttpError(400, "startsAt must be earlier than endsAt");
+    }
+
+    const existingResult = await pool.query(
+      "SELECT id, created_by, event_type, moderation_status FROM events WHERE id = $1",
+      [eventId]
+    );
+    if (existingResult.rowCount === 0) {
+      throw new HttpError(404, "Event not found");
+    }
+
+    const existing = existingResult.rows[0];
+    const isOwner = existing.created_by === req.user.sub;
+    const isAdmin = req.user.role === "ADMIN";
+    if (!isOwner && !isAdmin) {
+      throw new HttpError(403, "Only organizer or admin can edit event");
+    }
+
+    let nextStatus = existing.moderation_status;
+    if (existing.event_type === "COMMUNITY" && !isAdmin) {
+      nextStatus = "PENDING";
+    } else if (existing.event_type === "OFFICIAL" && isAdmin) {
+      nextStatus = "APPROVED";
+    } else if (existing.event_type === "COMMUNITY" && isAdmin && existing.moderation_status === "APPROVED") {
+      nextStatus = "APPROVED";
+    }
+
+    const result = await pool.query(
+      `UPDATE events
+       SET title = $1,
+           description = $2,
+           category_id = $3,
+           district_id = $4,
+           address = $5,
+           latitude = $6,
+           longitude = $7,
+           image_url = $8,
+           organizer_name = $9,
+           organizer_contact = $10,
+           starts_at = $11,
+           ends_at = $12,
+           event_type = $13,
+           moderation_status = $14,
+           moderation_comment = CASE WHEN $14 = 'PENDING' THEN '' ELSE moderation_comment END,
+           updated_at = NOW()
+       WHERE id = $15
+       RETURNING *`,
+      [
+        input.title,
+        input.description || "",
+        input.categoryId,
+        input.districtId,
+        input.address,
+        input.latitude ?? null,
+        input.longitude ?? null,
+        input.imageUrl || "",
+        input.organizerName,
+        input.organizerContact || "",
+        input.startsAt,
+        input.endsAt,
+        input.eventType,
+        nextStatus,
+        eventId
+      ]
+    );
+
+    return res.json({ item: result.rows[0] });
   } catch (error) {
     return next(error);
   }

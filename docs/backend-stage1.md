@@ -10,6 +10,8 @@
 
 - `GET /api/events` (public, only `APPROVED`)
   - filters: `q`, `categoryId`, `districtId`, `type`, `dateFrom`, `dateTo`
+  - pagination: `page` (default 1), `limit` (default 10, max 50)
+  - response: `{ items, total, page, limit, totalPages }`
 - `POST /api/events` (auth required)
   - Community events default: `PENDING`
   - Official events by admin: `APPROVED`
@@ -24,6 +26,10 @@
 - `GET /api/favorites` (auth)
 - `POST /api/favorites` (auth)
 - `DELETE /api/favorites/:eventId` (auth)
+
+## Admin
+
+- `GET /api/admin/stats` (admin) — users, events, registrations, moderation counts
 
 ## Moderation
 

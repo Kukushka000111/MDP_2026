@@ -17,32 +17,42 @@ function isDataImageUrl(value) {
   return /^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(value);
 }
 
+const eventBodySchema = z.object({
+  title: z.string().min(3).max(160),
+  description: z.string().max(3000).optional().default(""),
+  categoryId: z.string().uuid(),
+  districtId: z.string().uuid(),
+  address: z.string().min(3).max(220),
+  imageUrl: z
+    .string()
+    .max(MAX_IMAGE_URL_LENGTH)
+    .optional()
+    .default("")
+    .refine(
+      (value) => value === "" || isHttpUrl(value) || isDataImageUrl(value),
+      "imageUrl must be http(s) URL, data:image base64 URL, or empty"
+    ),
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
+  organizerName: z.string().min(2).max(120),
+  organizerContact: z.string().max(320).optional().default(""),
+  startsAt: z.string().datetime(),
+  endsAt: z.string().datetime(),
+  eventType
+});
+
 const createEventSchema = z.object({
-  body: z.object({
-    title: z.string().min(3).max(160),
-    description: z.string().max(3000).optional().default(""),
-    categoryId: z.string().uuid(),
-    districtId: z.string().uuid(),
-    address: z.string().min(3).max(220),
-    imageUrl: z
-      .string()
-      .max(MAX_IMAGE_URL_LENGTH)
-      .optional()
-      .default("")
-      .refine(
-        (value) => value === "" || isHttpUrl(value) || isDataImageUrl(value),
-        "imageUrl must be http(s) URL, data:image base64 URL, or empty"
-      ),
-    latitude: z.number().min(-90).max(90).nullable().optional(),
-    longitude: z.number().min(-180).max(180).nullable().optional(),
-    organizerName: z.string().min(2).max(120),
-    organizerContact: z.string().max(320).optional().default(""),
-    startsAt: z.string().datetime(),
-    endsAt: z.string().datetime(),
-    eventType
-  }),
+  body: eventBodySchema,
   query: z.object({}).optional(),
   params: z.object({}).optional()
+});
+
+const updateEventSchema = z.object({
+  body: eventBodySchema,
+  query: z.object({}).optional(),
+  params: z.object({
+    eventId: z.string().uuid()
+  })
 });
 
 const listEventsSchema = z.object({
@@ -53,7 +63,9 @@ const listEventsSchema = z.object({
     districtId: z.string().uuid().optional(),
     type: eventType.optional(),
     dateFrom: z.string().datetime().optional(),
-    dateTo: z.string().datetime().optional()
+    dateTo: z.string().datetime().optional(),
+    page: z.coerce.number().int().min(1).optional().default(1),
+    limit: z.coerce.number().int().min(1).max(50).optional().default(10)
   }),
   params: z.object({}).optional()
 });
@@ -79,6 +91,7 @@ const moderateEventSchema = z.object({
 
 module.exports = {
   createEventSchema,
+  updateEventSchema,
   listEventsSchema,
   listModerationQueueSchema,
   moderateEventSchema

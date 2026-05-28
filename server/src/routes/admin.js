@@ -9,6 +9,42 @@ const router = express.Router();
 
 router.use(requireAuth, requireAdmin);
 
+router.get("/stats", async (req, res, next) => {
+  try {
+    const [eventsByStatus, totals] = await Promise.all([
+      pool.query(
+        `SELECT moderation_status, COUNT(*)::int AS count
+         FROM events
+         GROUP BY moderation_status`
+      ),
+      pool.query(
+        `SELECT
+            (SELECT COUNT(*)::int FROM users) AS users_count,
+            (SELECT COUNT(*)::int FROM events) AS events_count,
+            (SELECT COUNT(*)::int FROM event_registrations) AS registrations_count,
+            (SELECT COUNT(*)::int FROM reviews) AS reviews_count,
+            (SELECT COUNT(*)::int FROM favorites) AS favorites_count`
+      )
+    ]);
+
+    const moderation = Object.fromEntries(
+      eventsByStatus.rows.map((row) => [row.moderation_status, row.count])
+    );
+
+    return res.json({
+      totals: totals.rows[0],
+      moderation: {
+        PENDING: moderation.PENDING || 0,
+        NEEDS_EDIT: moderation.NEEDS_EDIT || 0,
+        APPROVED: moderation.APPROVED || 0,
+        REJECTED: moderation.REJECTED || 0
+      }
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.get("/events/moderation-queue", validate(listModerationQueueSchema), async (req, res, next) => {
   try {
     const status = req.validated.query.status;
