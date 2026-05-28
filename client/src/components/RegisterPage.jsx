@@ -92,8 +92,8 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
     setSubmitting(true);
     try {
       const result = await register({
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
+        firstName: form.firstName.trim().replace(/\s+/g, " "),
+        lastName: form.lastName.trim().replace(/\s+/g, " "),
         email: form.email.trim(),
         login: form.login.trim(),
         password: form.password,
@@ -133,6 +133,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
           <Field label="Имя *" error={errors.firstName}>
             <input
               className={inputCls("firstName")}
+              placeholder="Иван или Анна Мария"
               value={form.firstName}
               onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
             />
@@ -140,6 +141,7 @@ export default function RegisterPage({ onSuccess, onNavigate, showToast }) {
           <Field label="Фамилия *" error={errors.lastName}>
             <input
               className={inputCls("lastName")}
+              placeholder="Иванов или Петров Сидоров"
               value={form.lastName}
               onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))}
             />

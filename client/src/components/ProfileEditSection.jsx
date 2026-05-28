@@ -56,8 +56,8 @@ export default function ProfileEditSection({ profile, token, onUpdated, onCancel
     setSaving(true);
     try {
       const updated = await updateMyProfile(token, {
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
+        firstName: form.firstName.trim().replace(/\s+/g, " "),
+        lastName: form.lastName.trim().replace(/\s+/g, " "),
         phone: form.phone.trim(),
         avatarUrl: form.avatarUrl.trim(),
         vkUrl: form.vkUrl.trim(),

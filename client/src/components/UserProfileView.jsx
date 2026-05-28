@@ -16,6 +16,7 @@ export default function UserProfileView({
   profile,
   isOwn,
   onEdit,
+  onLogout,
   onBack
 }) {
   if (!profile) {
@@ -94,10 +95,23 @@ export default function UserProfileView({
           <OrganizerContacts event={contactEvent} />
         </div>
 
-        {isOwn && onEdit && (
-          <button type="button" className="btn-primary mt-8 w-full sm:w-auto" onClick={onEdit}>
-            Редактировать профиль
-          </button>
+        {isOwn && (
+          <div className="mt-8 flex flex-wrap gap-3">
+            {onEdit && (
+              <button type="button" className="btn-primary w-full sm:w-auto" onClick={onEdit}>
+                Редактировать профиль
+              </button>
+            )}
+            {onLogout && (
+              <button
+                type="button"
+                className="w-full rounded-2xl border border-rose-200 bg-rose-50 px-5 py-2.5 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 sm:w-auto"
+                onClick={onLogout}
+              >
+                Выйти из аккаунта
+              </button>
+            )}
+          </div>
         )}
       </div>
     </section>

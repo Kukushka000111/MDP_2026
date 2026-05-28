@@ -1,18 +1,24 @@
-const NAME_REGEX = /^[A-Za-zА-Яа-яЁё\-]+$/;
+const NAME_PART_REGEX = /^[A-Za-zА-Яа-яЁё\-]+$/;
 
 function validatePersonName(value, label) {
-  const trimmed = value.trim();
-  if (trimmed.length < 2 || trimmed.length > 15) {
-    return `${label}: от 2 до 15 символов`;
+  const trimmed = value.trim().replace(/\s+/g, " ");
+  if (trimmed.length < 2 || trimmed.length > 40) {
+    return `${label}: от 2 до 40 символов`;
   }
-  if (!NAME_REGEX.test(trimmed)) {
-    return `${label}: только буквы и дефис`;
+  const parts = trimmed.split(" ");
+  if (parts.length > 2) {
+    return `${label}: не более двух слов`;
   }
-  if (trimmed.includes("--")) {
-    return `${label}: недопустим двойной дефис`;
-  }
-  if (/\s{2,}/.test(trimmed) || trimmed.includes(" ")) {
-    return `${label}: укажите одно слово без пробелов`;
+  for (const part of parts) {
+    if (part.length < 2) {
+      return `${label}: каждая часть — не короче 2 символов`;
+    }
+    if (!NAME_PART_REGEX.test(part)) {
+      return `${label}: только буквы и дефис`;
+    }
+    if (part.includes("--")) {
+      return `${label}: недопустим двойной дефис`;
+    }
   }
   return null;
 }
@@ -51,5 +57,5 @@ module.exports = {
   validatePersonName,
   validatePassword,
   validateLogin,
-  NAME_REGEX
+  NAME_PART_REGEX
 };

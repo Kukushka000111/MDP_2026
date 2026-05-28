@@ -42,10 +42,7 @@ export default function LoginPage({ onSuccess, onNavigate, showToast }) {
 
   return (
     <section className="card-surface mx-auto mb-6 max-w-md p-8">
-      <h2 className="section-heading mb-4 text-2xl">Вход</h2>
-      <p className="mb-4 text-sm text-slate-500">
-        Авторизация по логину и паролю. Сессия — JWT-токен (1 день).
-      </p>
+      <h2 className="section-heading mb-6 text-2xl">Вход</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

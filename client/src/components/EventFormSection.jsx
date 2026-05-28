@@ -1,4 +1,5 @@
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { MAP_CENTER, MAP_DEFAULT_ZOOM } from "../constants";
 import EventPointPicker from "./EventPointPicker";
 import { fieldErrorClass } from "../utils";
 
@@ -230,7 +231,7 @@ export default function EventFormSection({
             <p className="mb-2 text-xs text-rose-600">{fieldErrors.mapMarker}</p>
           )}
           <div className="overflow-hidden rounded-2xl border">
-            <MapContainer center={[54.9885, 73.3242]} zoom={12} style={{ height: "420px", width: "100%" }}>
+            <MapContainer center={MAP_CENTER} zoom={MAP_DEFAULT_ZOOM} style={{ height: "420px", width: "100%" }}>
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

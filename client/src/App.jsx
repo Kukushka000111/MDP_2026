@@ -30,6 +30,7 @@ import {
   updateEvent,
   upsertReview
 } from "./api";
+import AppFooter from "./components/AppFooter";
 import AppHeader from "./components/AppHeader";
 import ReportEventModal from "./components/ReportEventModal";
 import AttendApplyModal from "./components/AttendApplyModal";
@@ -722,7 +723,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-full">
+    <div className="flex min-h-full flex-col">
       <Toast toasts={toasts} />
       <AttendApplyModal
         open={attendModal.open}
@@ -740,12 +741,17 @@ export default function App() {
         token={token}
         userRole={user?.role}
         page={page}
+        profileAvatarUrl={myProfile?.avatar_url}
+        profileInitial={
+          myProfile
+            ? `${myProfile.first_name || ""} ${myProfile.last_name || ""}`.trim() || myProfile.display_name
+            : user?.display_name || user?.login
+        }
         onNavigate={navigate}
-        onLogout={logout}
         showToast={showToast}
       />
 
-      <main className="mx-auto max-w-7xl px-4 py-6">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">
         {(apiOffline || metaError) && (
           <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             Сервер API недоступен. Запустите бэкенд: <code className="rounded bg-amber-100 px-1">npm run dev:server</code>
@@ -775,6 +781,7 @@ export default function App() {
               profile={myProfile}
               isOwn
               onEdit={() => navigate(PAGES.PROFILE_EDIT)}
+              onLogout={logout}
             />
           ) : (
             <p className="rounded-lg bg-white p-4 text-sm text-slate-500 shadow">Загрузка профиля…</p>
@@ -926,6 +933,8 @@ export default function App() {
           />
         )}
       </main>
+
+      <AppFooter token={token} onNavigate={navigate} />
     </div>
   );
 }

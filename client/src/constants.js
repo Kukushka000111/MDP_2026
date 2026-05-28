@@ -2,6 +2,10 @@ export const FAVORITES_KEY = "cultural-navigator:guest-favorites";
 export const TOKEN_KEY = "cultural-navigator:token";
 export const PAGE_SIZE = 10;
 
+/** Центр карты — Кострома */
+export const MAP_CENTER = [57.7679, 40.9269];
+export const MAP_DEFAULT_ZOOM = 12;
+
 export const PAGES = {
   FEED: "feed",
   EVENT: "event",
