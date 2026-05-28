@@ -152,6 +152,8 @@ export default function App() {
   const [reviewsByEvent, setReviewsByEvent] = useState({});
   const [reviewForm, setReviewForm] = useState({ rating: 5, body: "" });
   const [geocodeCandidates, setGeocodeCandidates] = useState([]);
+  const [eventSubmitMessage, setEventSubmitMessage] = useState("");
+  const [eventSubmitError, setEventSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({ q: "", categoryId: "", districtId: "", dateFrom: "", dateTo: "" });
 
@@ -267,20 +269,41 @@ export default function App() {
   async function submitEvent(event) {
     event.preventDefault();
     if (!token) return;
-    await createEvent(token, {
-      ...eventForm,
-      latitude: eventForm.latitude ? Number(eventForm.latitude) : null,
-      longitude: eventForm.longitude ? Number(eventForm.longitude) : null,
-      startsAt: new Date(eventForm.startsAt).toISOString(),
-      endsAt: new Date(eventForm.endsAt).toISOString(),
-      imageUrl: eventForm.imageUrl || ""
-    });
-    setEventForm({
-      title: "", description: "", categoryId: "", districtId: "", address: "", latitude: "", longitude: "",
-      organizerName: "", organizerContact: "", startsAt: "", endsAt: "", eventType: "COMMUNITY", imageUrl: ""
-    });
-    setEvents(await getEvents(filters));
-    setMyEvents(await getMyCreatedEvents(token));
+    setEventSubmitMessage("");
+    setEventSubmitError("");
+
+    if (
+      !eventForm.title ||
+      !eventForm.address ||
+      !eventForm.organizerName ||
+      !eventForm.categoryId ||
+      !eventForm.districtId ||
+      !eventForm.startsAt ||
+      !eventForm.endsAt
+    ) {
+      setEventSubmitError("Заполните обязательные поля: название, адрес, организатор, категория, район, даты.");
+      return;
+    }
+
+    try {
+      await createEvent(token, {
+        ...eventForm,
+        latitude: eventForm.latitude ? Number(eventForm.latitude) : null,
+        longitude: eventForm.longitude ? Number(eventForm.longitude) : null,
+        startsAt: new Date(eventForm.startsAt).toISOString(),
+        endsAt: new Date(eventForm.endsAt).toISOString(),
+        imageUrl: eventForm.imageUrl || ""
+      });
+      setEventForm({
+        title: "", description: "", categoryId: "", districtId: "", address: "", latitude: "", longitude: "",
+        organizerName: "", organizerContact: "", startsAt: "", endsAt: "", eventType: "COMMUNITY", imageUrl: ""
+      });
+      setEvents(await getEvents(filters));
+      setMyEvents(await getMyCreatedEvents(token));
+      setEventSubmitMessage("Мероприятие отправлено на модерацию.");
+    } catch (error) {
+      setEventSubmitError(error?.message || "Не удалось создать мероприятие. Проверьте, что сервер запущен, и попробуйте ещё раз.");
+    }
   }
 
   async function applyModeration(eventId, status) {
@@ -600,6 +623,8 @@ export default function App() {
               <button type="button" className="rounded bg-slate-200 px-2 py-1 text-sm" onClick={geocodeCurrentAddress}>Определить точку по адресу</button>
               <button type="submit" className="rounded bg-emerald-600 px-2 py-1 text-white">Отправить</button>
             </form>
+            {eventSubmitError && <p className="mt-2 text-xs text-rose-600">{eventSubmitError}</p>}
+            {eventSubmitMessage && <p className="mt-2 text-xs text-emerald-700">{eventSubmitMessage}</p>}
             <p className="mt-2 text-xs text-slate-500">
               Для точного поиска пишите полный адрес: город, улица, дом. Например: "Омск, Ленина, 10".
             </p>

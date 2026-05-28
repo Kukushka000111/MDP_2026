@@ -153,7 +153,16 @@ export async function createEvent(token, payload) {
     },
     body: JSON.stringify(payload)
   });
-  if (!response.ok) throw new Error("Event creation failed");
+  if (!response.ok) {
+    let message = "Event creation failed";
+    try {
+      const data = await response.json();
+      if (data?.error) message = data.error;
+    } catch (_error) {
+      // keep fallback message
+    }
+    throw new Error(message);
+  }
   return response.json();
 }
 
